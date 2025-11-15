@@ -1,6 +1,6 @@
 # protext-scraper
 
-Scraper pro extrakci a analýzu tiskových zpráv z českých PR portálů. Projekt je určen pro akademické účely a umožňuje systematické shromažďování dat z webových stránek pomocí přímého ID skenování.
+Scraper pro extrakci a analýzu tiskových zpráv z portálu Protext.cz. Projekt je určen pro akademické účely a umožňuje systematické shromažďování dat z webových stránek pomocí přímého ID skenování.
 
 ## Stručný popis
 
@@ -10,7 +10,7 @@ Projekt vznikl jako součást akademického výzkumu zaměřeného na analýzu k
 
 ## Kontext eseje
 
-Projekt je součástí akademické práce zabývající se analýzou tiskových zpráv v českém prostředí. Práce zkoumá obsahové charakteristiky, kategorizaci a časové rozložení tiskových zpráv publikovaných na veřejných PR portálech. Scraper slouží jako nástroj pro získání reprezentativního datasetu potřebného pro kvantitativní analýzu.
+Projekt je součástí akademické práce zabývající se analýzou tiskových zpráv v českém prostředí. Práce zkoumá obsahové charakteristiky, kategorizaci a časové rozložení tiskových zpráv publikovaných na portálu Protext.cz. Scraper slouží jako nástroj pro získání reprezentativního datasetu potřebného pro kvantitativní analýzu.
 
 ## Jak funguje scraping
 
