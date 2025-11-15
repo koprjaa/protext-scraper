@@ -10,7 +10,7 @@ Projekt vznikl jako součást akademického výzkumu zaměřeného na analýzu k
 
 ## Kontext eseje
 
-Projekt je součástí akademické práce zabývající se analýzou tiskových zpráv v českém prostředí. Práce zkoumá obsahové charakteristiky, kategorizaci a časové rozložení tiskových zpráv publikovaných na portálu Protext.cz. Scraper slouží jako nástroj pro získání reprezentativního datasetu potřebného pro kvantitativní analýzu.
+Projekt byl vytvořen jako součást eseje v předmětu **4IT550 - Competitive Intelligence** v ZS 2025/2026. Práce se zabývá analýzou tiskových zpráv v českém prostředí a zkoumá obsahové charakteristiky, kategorizaci a časové rozložení tiskových zpráv publikovaných na portálu Protext.cz. Scraper slouží jako nástroj pro získání reprezentativního datasetu potřebného pro kvantitativní analýzu.
 
 ## Jak funguje scraping
 
