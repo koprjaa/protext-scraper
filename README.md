@@ -1,6 +1,6 @@
 # protext-scraper
 
-Scraper pro extrakci a analýzu tiskových zpráv z českých PR portálů. Projekt je určen pro akademické účely a umožňuje systematické shromažďování dat z veřejně dostupných RSS feedů a webových stránek.
+Scraper pro extrakci a analýzu tiskových zpráv z českých PR portálů. Projekt je určen pro akademické účely a umožňuje systematické shromažďování dat z webových stránek pomocí přímého ID skenování.
 
 ## Stručný popis
 
@@ -14,10 +14,10 @@ Projekt je součástí akademické práce zabývající se analýzou tiskových 
 
 ## Jak funguje scraping
 
-Scraper pracuje ve dvou hlavních režimech:
+Scraper používá kombinovaný přístup:
 
-1. **RSS feed scraping**: Monitoruje RSS feedy z Protext.cz a extrahuje odkazy na jednotlivé články
-2. **Přímé ID skenování**: Prochází rozsah ID článků na Protext.cz a načítá jejich obsah
+1. **RSS feed pro zjištění rozsahu**: RSS feed z Protext.cz (`https://www.protext.cz/rss/cz.php`) se používá pouze pro zjištění nejnovějšího ID článku a určení rozsahu pro skenování
+2. **Přímé ID skenování**: Hlavní scraping probíhá přímým procházením rozsahu ID článků. Scraper načítá každý článek přímo podle URL `https://www.protext.cz/zprava.php?id={article_id}` a extrahuje jeho obsah
 
 Pro každý článek scraper extrahuje:
 - Titulky a hlavní obsah
