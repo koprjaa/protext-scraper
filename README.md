@@ -4,11 +4,11 @@ Scraper pro extrakci a analýzu tiskových zpráv z portálu Protext.cz. Projekt
 
 ## Stručný popis
 
-Scraper extrahuje kompletní obsah článků z portálu Protext.cz včetně metadat a umožňuje jejich následnou analýzu podle kategorií. Data jsou ukládána ve strukturovaném JSON formátu vhodném pro další zpracování.
+Scraper extrahuje obsah článků z portálu Protext.cz včetně metadat a umožňuje analýzu podle kategorií. Data jsou ukládána ve formátu JSON.
 
 ## Kontext eseje
 
-Projekt byl vytvořen jako součást eseje v předmětu **4IT550 - Competitive Intelligence** v ZS 2025/2026. Práce se zabývá analýzou tiskových zpráv v českém prostředí a zkoumá obsahové charakteristiky, kategorizaci a časové rozložení tiskových zpráv publikovaných na portálu Protext.cz. Scraper slouží jako nástroj pro získání reprezentativního datasetu potřebného pro kvantitativní analýzu.
+Projekt byl vytvořen jako součást eseje v předmětu **4IT550 - Competitive Intelligence** v ZS 2025/2026. Scraper slouží pro získání datasetu tiskových zpráv z portálu Protext.cz potřebného pro kvantitativní analýzu.
 
 ## Jak funguje scraping
 
@@ -27,7 +27,7 @@ Scraper používá etické postupy včetně rate limitingu, zpoždění mezi po�
 
 ## Co dataset obsahuje
 
-Dataset obsahuje strukturovaná data o tiskových zprávách ve formátu JSON. Každý záznam obsahuje:
+Dataset obsahuje data ve formátu JSON. Každý záznam obsahuje:
 
 - **title**: Název tiskové zprávy
 - **content**: Celý textový obsah článku
@@ -36,27 +36,23 @@ Dataset obsahuje strukturovaná data o tiskových zprávách ve formátu JSON. K
 - **category**: Kategorie článku (např. "Finance, ekonomika", "IT, telekomunikace")
 - **article_id**: Unikátní ID článku z Protext.cz
 
-
 ## Jak probíhá analýza
 
-Scraper obsahuje integrovanou analýzu kategorií (CI - Category Intelligence), která:
+Scraper obsahuje analýzu kategorií, která:
 
-1. **Automaticky kategorizuje** načtené články podle jejich zařazení na zdrojovém portálu
+1. **Kategorizuje** načtené články podle jejich zařazení na zdrojovém portálu
 2. **Generuje statistiky** o rozložení článků napříč kategoriemi
 3. **Umožňuje filtrování** datasetu podle vybraných kategorií
-4. **Exportuje analýzu** do samostatného JSON souboru s časovým razítkem
+4. **Exportuje analýzu** do samostatného JSON souboru
 
-Analýza probíhá automaticky po dokončení scrapingu a výsledky jsou zobrazeny v konzoli i uloženy do souboru.
+Výsledky jsou zobrazeny v konzoli i uloženy do souboru.
 
 ## Technologie použité v projektu
 
-- **Python 3** - programovací jazyk
-- **BeautifulSoup4** - parsování HTML obsahu
+- **Python 3**
+- **BeautifulSoup4** - parsování HTML
 - **Requests** - HTTP požadavky
 - **lxml** - XML/HTML parser
-- **ThreadPoolExecutor** - paralelní zpracování
-- **chardet** - detekce kódování
-- **JSON** - ukládání strukturovaných dat
 
 ## Struktura repozitáře
 
