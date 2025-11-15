@@ -27,10 +27,25 @@ Dataset obsahuje data ve formátu JSON. Tiskové zprávy jsou strukturovány pod
 
 - **title**: Název tiskové zprávy
 - **content**: Celý textový obsah článku
-- **url**: Odkaz na původní článek
+- **link**: Odkaz na původní článek
+- **id**: Unikátní ID článku z Protext.cz
 - **date**: Datum publikace
+- **keywords**: Klíčová slova
 - **category**: Kategorie článku (např. "Finance, ekonomika", "IT, telekomunikace")
-- **article_id**: Unikátní ID článku z Protext.cz
+
+### Příklad struktury záznamu
+
+```json
+{
+  "title": "Mezinárodní týden darování krevní plazmy: Odebraná plazma je nezbytná pro záchranu životů",
+  "content": "Plazma tvoří přibližně 55 % lidské krve a obsahuje stovky životně důležitých proteinů...",
+  "link": "https://www.protext.cz/zprava.php?id=54652",
+  "id": 54652,
+  "date": "Praha 10. října 2025 (PROTEXT)",
+  "keywords": "Protext-ČR-zdraví-farmacie-krev-firmy-BioLife",
+  "category": "Chemický a farmaceutický průmysl"
+}
+```
 
 ## Jak probíhá analýza
 
