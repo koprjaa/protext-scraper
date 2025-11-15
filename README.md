@@ -1,6 +1,6 @@
 # protext-scraper
 
-Scraper pro extrakci a analýzu tiskových zpráv z portálu Protext.cz. Projekt je určen pro akademické účely a umožňuje systematické shromažďování dat z webových stránek pomocí přímého ID skenování jako součást automatizovaného vytěžování textu (Text and Data Mining, TDM).
+Scraper pro extrakci a analýzu tiskových zpráv z portálu Protext.cz. 
 
 ## Stručný popis
 
@@ -114,11 +114,22 @@ Pro anonymní přístup můžete použít Tor. Ujistěte se, že máte spuštěn
 
 - Nepoužívej scraper pro komerční účely bez souhlasu vlastníků obsahu
 - Neobcházej bezpečnostní opatření webových stránek
-- Respektuj podmínky použití zdrojového webu
+- Respektuj podmínky použití zdrojového webu a strojově čitelné výhrady v `robots.txt`
+- Dataset nesmí být šířen ani používán pro trénink modelů strojového učení bez souhlasu držitele práv
 
 ### Text a data mining (TDM)
 
-Pro akademické a výzkumné účely lze využít výjimku podle § 39c (obecné TDM) a § 31 odst. 1 písm. c) nebo § 39d zákona č. 121/2000 Sb., o právu autorském. § 39d se vztahuje na vědecký výzkum a umožňuje uchovávat rozmnoženiny po dobu nezbytnou pro ověření výsledků výzkumu. Pro účely vědeckého výzkumu platí výjimky podle principů GDPR a Autorského zákona ve znění harmonizujícím s EU směrnicemi pro vědecký výzkum (§ 89 GDPR, § 39d AZ).
+Pro akademické a výzkumné účely lze využít výjimku podle § 39c nebo § 39d zákona č. 121/2000 Sb., o právu autorském.
+
+**Důležité omezení:**
+
+- **Výhrada autora**: TDM výjimka podle § 39c se nepoužije, pokud si autor užití výslovně vyhradil (zejména u děl zpřístupňovaných on-line pomocí strojově čitelných prostředků). Protext.cz ve svém `robots.txt` uvádí výhradu proti některým user-agentům pro strojové učení; tuto strojově čitelnou výhradu je nutné respektovat.
+
+- **Uchovávání dat**: Podle § 39c smí být rozmnoženina uchovávána pouze po dobu nezbytnou pro provedení analýzy. Podle § 39d (pro vědecký výzkum) lze rozmnoženiny uchovávat po dobu nezbytnou pro ověření výsledků výzkumu, ale musí být zabezpečené a nesmějí sloužit k přímému či nepřímému hospodářskému prospěchu.
+
+- **Šíření dat**: Dataset nesmí být dále šířen. Kopie textů musí být uchovávány pouze po dobu nezbytnou pro výzkum.
+
+- **Další využití**: Jakékoli další využití dat (např. trénink modelů strojového učení, komerční využití) vyžaduje souhlas držitele práv. Tento scraper je určen pouze pro akademickou analýzu tiskových zpráv bez dalšího komerčního využití.
 
 ## Licence
 
