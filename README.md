@@ -110,14 +110,6 @@ Pro anonymní přístup můžete použít Tor. Ujistěte se, že máte spuštěn
 
 **Důležité**: Tento scraper je určen výhradně pro akademické a výzkumné účely.
 
-### Právní odpovědnost
-
-- **Autorský zákon**: Respektujte český Autorský zákon (121/2000 Sb.) a výjimky pro text a data mining (TDM)
-- **Zákonný přístup**: **Uživatel musí mít k datům zákonný přístup.** Aplikace TDM výjimek je podmíněna tím, že uživatel musí mít k vytěžovaným materiálům zákonný přístup (Lawful Access)
-- **Rate limiting**: Scraper obsahuje mechanismy pro etické chování (zpoždění mezi požadavky, rotace User-Agentů, Tor proxy pro anonymní přístup)
-- **Upozornění**: Scraper automaticky nekontroluje `robots.txt` - uživatel je odpovědný za dodržování pravidel zdrojového webu
-- **Osobní údaje**: Dataset neobsahuje osobní údaje fyzických osob
-
 ### Omezení použití
 
 - Nepoužívej scraper pro komerční účely bez souhlasu vlastníků obsahu
