@@ -1,6 +1,6 @@
 # protext-scraper
 
-Scraper pro extrakci a analýzu tiskových zpráv z portálu Protext.cz. Projekt je určen pro akademické účely a umožňuje systematické shromažďování dat z webových stránek pomocí přímého ID skenování.
+Scraper pro extrakci a analýzu tiskových zpráv z portálu Protext.cz. Projekt je určen pro akademické účely a umožňuje systematické shromažďování dat z webových stránek pomocí přímého ID skenování jako součást automatizovaného vytěžování textu (Text and Data Mining, TDM).
 
 ## Stručný popis
 
@@ -8,7 +8,7 @@ Scraper extrahuje obsah článků z portálu Protext.cz včetně metadat a umož
 
 ## Kontext eseje
 
-Projekt byl vytvořen jako součást eseje v předmětu **4IT550 - Competitive Intelligence** v ZS 2025/2026. Scraper slouží pro získání datasetu tiskových zpráv z portálu Protext.cz potřebného pro kvantitativní analýzu.
+Projekt byl vytvořen jako součást eseje v předmětu **4IT550 - Competitive Intelligence** v ZS 2025/2026. Scraper slouží pro získání datové sady tiskových zpráv z portálu Protext.cz potřebného pro kvantitativní obsahovou analýzu (QCA).
 
 ## Jak funguje scraping
 
@@ -27,7 +27,7 @@ Scraper používá etické postupy včetně rate limitingu, zpoždění mezi po�
 
 ## Co dataset obsahuje
 
-Dataset obsahuje data ve formátu JSON. Každý záznam obsahuje:
+Dataset obsahuje data ve formátu JSON. Tiskové zprávy jsou strukturovány podle obrácené pyramidy (nejdůležitější informace na začátku). Každý záznam obsahuje:
 
 - **title**: Název tiskové zprávy
 - **content**: Celý textový obsah článku
@@ -113,6 +113,7 @@ Pro anonymní přístup můžete použít Tor. Ujistěte se, že máte spuštěn
 ### Právní odpovědnost
 
 - **Autorský zákon**: Respektujte český Autorský zákon (121/2000 Sb.) a výjimky pro text a data mining (TDM)
+- **Zákonný přístup**: **Uživatel musí mít k datům zákonný přístup.** Aplikace TDM výjimek je podmíněna tím, že uživatel musí mít k vytěžovaným materiálům zákonný přístup (Lawful Access)
 - **Rate limiting**: Scraper obsahuje mechanismy pro etické chování (zpoždění mezi požadavky, rotace User-Agentů, Tor proxy pro anonymní přístup)
 - **Upozornění**: Scraper automaticky nekontroluje `robots.txt` - uživatel je odpovědný za dodržování pravidel zdrojového webu
 - **Osobní údaje**: Dataset neobsahuje osobní údaje fyzických osob
@@ -125,7 +126,7 @@ Pro anonymní přístup můžete použít Tor. Ujistěte se, že máte spuštěn
 
 ### Text a data mining (TDM)
 
-Pro akademické účely lze využít výjimku podle § 39c zákona č. 121/2000 Sb., o právu autorském, která umožňuje reprodukovat díla pro účely textového a datového těžby za podmínek stanovených zákonem.
+Pro akademické a výzkumné účely lze využít výjimku podle § 39c (obecné TDM) a § 31 odst. 1 písm. c) nebo § 39d zákona č. 121/2000 Sb., o právu autorském. § 39d se vztahuje na vědecký výzkum a umožňuje uchovávat rozmnoženiny po dobu nezbytnou pro ověření výsledků výzkumu. Pro účely vědeckého výzkumu platí výjimky podle principů GDPR a Autorského zákona ve znění harmonizujícím s EU směrnicemi pro vědecký výzkum (§ 89 GDPR, § 39d AZ).
 
 ## Licence
 
