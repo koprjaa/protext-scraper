@@ -4,9 +4,7 @@ Scraper pro extrakci a analýzu tiskových zpráv z portálu Protext.cz. Projekt
 
 ## Stručný popis
 
-Tento projekt obsahuje nástroj pro scraping tiskových zpráv z portálu Protext.cz. Scraper extrahuje kompletní obsah článků včetně metadat a umožňuje jejich následnou analýzu podle kategorií. Data jsou ukládána ve strukturovaném JSON formátu vhodném pro další zpracování.
-
-Projekt vznikl jako součást akademického výzkumu zaměřeného na analýzu komunikace v českém mediálním prostředí.
+Scraper extrahuje kompletní obsah článků z portálu Protext.cz včetně metadat a umožňuje jejich následnou analýzu podle kategorií. Data jsou ukládána ve strukturovaném JSON formátu vhodném pro další zpracování.
 
 ## Kontext eseje
 
@@ -38,7 +36,6 @@ Dataset obsahuje strukturovaná data o tiskových zprávách ve formátu JSON. K
 - **category**: Kategorie článku (např. "Finance, ekonomika", "IT, telekomunikace")
 - **article_id**: Unikátní ID článku z Protext.cz
 
-Dataset není distribuován součástí repozitáře. Uživatel je odpovědný za dodržování právních předpisů při scrapingu.
 
 ## Jak probíhá analýza
 
@@ -64,8 +61,8 @@ Analýza probíhá automaticky po dokončení scrapingu a výsledky jsou zobraze
 ## Struktura repozitáře
 
 ```
-tiskovky scraper/
-├── tiskovky_rss_scraper.py    # Hlavní scraper
+protext-scraper/
+├── main.py                     # Hlavní scraper
 ├── requirements.txt            # Python závislosti
 ├── README.md                   # Dokumentace
 ├── data/
@@ -86,8 +83,8 @@ tiskovky scraper/
 
 1. Naklonujte repozitář:
 ```bash
-git clone <repository-url>
-cd "tiskovky scraper"
+git clone https://github.com/koprjaa/protext-scraper.git
+cd protext-scraper
 ```
 
 2. Nainstalujte závislosti:
@@ -99,7 +96,7 @@ pip install -r requirements.txt
 
 Spusťte scraper příkazem:
 ```bash
-python tiskovky_rss_scraper.py
+python main.py
 ```
 
 Scraper nabídne interaktivní menu s možnostmi:
@@ -128,8 +125,7 @@ Pro anonymní přístup můžete použít Tor. Ujistěte se, že máte spuštěn
 
 - Nepoužívej scraper pro komerční účely bez souhlasu vlastníků obsahu
 - Neobcházej bezpečnostní opatření webových stránek
-- Respektuj podmínky použití zdrojových webů
-- Dataset není distribuován součástí repozitáře - uživatel je odpovědný za dodržování právních předpisů při scrapingu
+- Respektuj podmínky použití zdrojového webu
 
 ### Text a data mining (TDM)
 
