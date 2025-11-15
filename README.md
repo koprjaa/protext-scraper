@@ -1,9 +1,5 @@
 # protext-scraper
 
-Scraper pro extrakci a analýzu tiskových zpráv z portálu Protext.cz. 
-
-## Stručný popis
-
 Scraper extrahuje obsah článků z portálu Protext.cz včetně metadat a umožňuje analýzu podle kategorií. Data jsou ukládána ve formátu JSON.
 
 ## Kontext eseje
