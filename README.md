@@ -25,7 +25,7 @@ Pro každý článek scraper extrahuje:
 - Kategorii článku
 - Metadata (ID, URL)
 
-Scraper respektuje `robots.txt` a používá etické postupy včetně rate limitingu a rotace User-Agentů. Pro anonymní přístup lze použít Tor proxy.
+Scraper používá etické postupy včetně rate limitingu, zpoždění mezi požadavky a rotace User-Agentů. Pro anonymní přístup lze použít Tor proxy.
 
 ## Co dataset obsahuje
 
@@ -120,8 +120,8 @@ Pro anonymní přístup můžete použít Tor. Ujistěte se, že máte spuštěn
 ### Právní odpovědnost
 
 - **Autorský zákon**: Respektujte český Autorský zákon (121/2000 Sb.) a výjimky pro text a data mining (TDM)
-- **robots.txt**: Scraper respektuje pravidla `robots.txt` zdrojových webů
-- **Rate limiting**: Scraper obsahuje mechanismy pro etické chování (zpoždění mezi požadavky, rotace User-Agentů)
+- **Rate limiting**: Scraper obsahuje mechanismy pro etické chování (zpoždění mezi požadavky, rotace User-Agentů, Tor proxy pro anonymní přístup)
+- **Upozornění**: Scraper automaticky nekontroluje `robots.txt` - uživatel je odpovědný za dodržování pravidel zdrojového webu
 - **Osobní údaje**: Dataset neobsahuje osobní údaje fyzických osob
 
 ### Omezení použití
