@@ -1180,7 +1180,6 @@ def main():
     except Exception:
         pass  # If ASCII art fails to load, continue anyway
 
-    print("PROTEXT.CZ TOR SCRAPER")
     print("=" * 50)
 
     # Check and setup Tor
