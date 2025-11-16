@@ -1168,6 +1168,18 @@ def offer_category_filtering(articles, output_dir):
 def main():
     """Main function to scrape Protext.cz articles directly via ID scanning with Tor."""
 
+    # Load and display ASCII art
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    ascii_file = os.path.join(script_dir, "data", "ascii.txt")
+    try:
+        if os.path.exists(ascii_file):
+            with open(ascii_file, "r", encoding="utf-8") as f:
+                ascii_art = f.read()
+                print(ascii_art)
+                print()
+    except Exception:
+        pass  # If ASCII art fails to load, continue anyway
+
     print("PROTEXT.CZ TOR SCRAPER")
     print("=" * 50)
 
