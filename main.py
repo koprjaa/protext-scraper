@@ -1267,9 +1267,11 @@ def main():
         f"5. MASSIVE - range {latest_id-99999}-{latest_id} "
         f"(estimate: ~50000-80000 articles)"
     )
+    # For MAXIMUM, use ID 1 as minimum since RSS feed only contains ~50 articles
+    maximum_min_id = 1
     print(
-        f"6. MAXIMUM - range {oldest_id}-{latest_id} "
-        f"(estimate: ~{latest_id-oldest_id} articles)"
+        f"6. MAXIMUM - range {maximum_min_id}-{latest_id} "
+        f"(estimate: ~{latest_id} articles - scans from ID 1 to newest)"
     )
     print("7. CUSTOM - enter custom range")
     print("8. CATEGORY ANALYSIS - scrape 200 articles and analyze categories")
@@ -1399,12 +1401,14 @@ def main():
                 print("Cancelled.")
                 return
         elif choice == "6":
-            # Maximum range
-            print(f"MAXIMUM DATASET: {oldest_id}-{latest_id} (TOR FAST)")
+            # Maximum range - use ID 1 as minimum since RSS feed only contains ~50 articles
+            maximum_min_id = 1
+            print(f"MAXIMUM DATASET: {maximum_min_id}-{latest_id} (TOR FAST)")
+            print(f"WARNING: This will scan from ID 1 to {latest_id} ({latest_id} articles)")
             confirm = input("Continue? (y/N): ").strip().lower()
             if confirm == "y":
                 all_articles = scan_id_range_parallel_batch(
-                    oldest_id,
+                    maximum_min_id,
                     latest_id,
                     max_workers=25,  # Reduced from 50
                     batch_size=500,  # Reduced from 1000
