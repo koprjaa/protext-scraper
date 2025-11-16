@@ -1537,7 +1537,7 @@ def main():
             return
 
     except KeyboardInterrupt:
-        print("\nInterrupted by user.")
+        print("\n\nBye!")
         return
     except Exception as e:
         print(f"Error during choice: {e}")
@@ -1562,4 +1562,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\nBye!")
+        exit(0)
