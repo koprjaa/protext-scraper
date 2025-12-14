@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-PR/Press Release Content Scraper
-Extracts full content from PR and press release RSS feeds and saves them to
-a single text file.
+Project: Protext Scraper
+File: main.py
+Description: Extracts full content from PR and press release RSS feeds and saves them to a single text file.
+Author: Jan Alexandr Kopřiva jan.alexandr.kopriva@gmail.com
+License: MIT
 """
 
 import requests
@@ -21,7 +23,7 @@ from bs4 import BeautifulSoup
 import subprocess
 import socket
 
-# Extended User-Agent rotation list with more variety
+# Diverse pool to evade fingerprinting
 USER_AGENTS = [
     # Chrome Windows - latest versions
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -80,7 +82,8 @@ def get_random_user_agent():
 def check_tor_connection():
     """Check if Tor is running and accessible."""
     try:
-        # Test Tor connection
+        # Validate proxy circuit
+
         session = requests.Session()
         session.proxies = {
             "http": "socks5://127.0.0.1:9050",
@@ -101,7 +104,7 @@ def check_tor_connection():
 def start_tor_service():
     """Start Tor service if not running."""
     try:
-        # Check if Tor is already running
+
         if check_tor_connection():
             return True
 
@@ -149,7 +152,8 @@ def get_tor_session():
 def renew_tor_circuit():
     """Renew Tor circuit for new IP with better error handling."""
     try:
-        # Connect to Tor control port
+        # Auth with local control port to request new identity
+
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)  # Add timeout
         sock.connect(("127.0.0.1", 9051))  # Tor control port
@@ -190,10 +194,10 @@ def make_request_with_retry(url, max_retries=3, base_delay=1, use_tor=True):
     """Make HTTP request with Tor and advanced anti-blocking techniques."""
     for attempt in range(max_retries):
         try:
-            # Minimal delay before request
+            # Random jitter to avoid timing analysis
             time.sleep(random.uniform(0.05, 0.2))  # Reduced from 0.1-0.5
 
-            # Advanced headers to mimic real browser
+            # Mimic standard browser headers
             headers = {
                 "User-Agent": get_random_user_agent(),
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,"
@@ -214,7 +218,8 @@ def make_request_with_retry(url, max_retries=3, base_delay=1, use_tor=True):
                 "Sec-Ch-Ua-Platform": '"Windows"',
             }
 
-            # Create session with Tor proxy if enabled
+            # Route through Tor if enabled
+
             if use_tor:
                 session = get_tor_session()
             else:
@@ -227,7 +232,8 @@ def make_request_with_retry(url, max_retries=3, base_delay=1, use_tor=True):
 
             response = session.get(url, timeout=timeout, allow_redirects=True)
 
-            # Handle different response codes - only renew Tor circuit when blocked
+            # Only rotate IP on actual blocks, not generic errors
+
             if response.status_code == 429:
                 retry_after = int(response.headers.get("Retry-After", 180))
                 print(f"Rate limited (429). Waiting {retry_after} seconds...")
@@ -256,7 +262,8 @@ def make_request_with_retry(url, max_retries=3, base_delay=1, use_tor=True):
 
         except requests.exceptions.RequestException as e:
             if attempt < max_retries - 1:
-                # Progressive backoff with randomization
+                # Exponential backoff + jitter
+
                 delay = base_delay * (2**attempt) + random.uniform(2, 8)
                 print(
                     f"Request failed (attempt {attempt + 1}/{max_retries}): "
@@ -277,9 +284,9 @@ def make_request_with_retry(url, max_retries=3, base_delay=1, use_tor=True):
     return None
 
 
-# Thread-safe file writing and duplicate tracking
+# Prevent race conditions in parallel execution
 FILE_LOCK = threading.Lock()
-PROCESSED_IDS = set()  # Global set to track processed IDs
+PROCESSED_IDS = set()
 
 
 def remove_duplicates_from_json(file_path):
@@ -288,7 +295,8 @@ def remove_duplicates_from_json(file_path):
         with open(file_path, "r", encoding="utf-8") as f:
             articles = json.load(f)
         
-        # Create dictionary with ID as key to automatically remove duplicates
+        # Deduplicate by ID
+
         unique_articles = {}
         duplicates_count = 0
         
@@ -338,7 +346,8 @@ def save_articles_progressively(articles, output_dir, filename):
                 except (json.JSONDecodeError, FileNotFoundError):
                     existing_data = []
 
-            # Create set of existing IDs for fast lookup
+            # Local cache of existing IDs for O(1) lookups
+
             existing_ids = {article.get("id") for article in existing_data if article.get("id")}
             
             # Filter out duplicates from new articles
@@ -396,7 +405,7 @@ def fetch_article_by_id(article_id):
         if not response:
             return None
 
-        # Detect encoding
+        # Handle variable encodings (legacy systems often use Windows-1250)
         raw_content = response.content
         detected = chardet.detect(raw_content)
         encoding = detected["encoding"] if detected["encoding"] else "utf-8"
@@ -406,10 +415,10 @@ def fetch_article_by_id(article_id):
         except UnicodeDecodeError:
             content = raw_content.decode("utf-8", errors="ignore")
 
-        # Parse HTML with BeautifulSoup
+
         soup = BeautifulSoup(content, "html.parser")
 
-        # Extract article data
+
         article_data = {}
 
         # Extract title - specific for Protext.cz structure
@@ -421,8 +430,9 @@ def fetch_article_by_id(article_id):
         if title_elem:
             article_data["title"] = clean_content(title_elem.get_text())
 
-        # Extract content - specific selectors for Protext.cz
+        # Try multiple selectors to handle legacy/varied layouts
         content_selectors = [
+
             "#articlebody",  # Main content area
             '[itemprop="articleBody"]',  # Schema.org markup
             ".omega.seven.columns",  # Content column
@@ -450,7 +460,8 @@ def fetch_article_by_id(article_id):
                 break
 
         if not full_text:
-            # Fallback - get all text but clean it
+            # Fallback: aggressive cleaning of raw text
+
             for unwanted in soup.select("script, style, nav, header, footer, aside"):
                 unwanted.decompose()
             full_text = soup.get_text(separator=" ", strip=True)
@@ -468,7 +479,7 @@ def fetch_article_by_id(article_id):
         if date_elem:
             article_data["date"] = date_elem.get_text().strip()
 
-        # Extract keywords if available - improved search
+        # Attempt to extract keywords via common patterns
         keywords_text = ""
         
         # Method 1: Look for paragraph containing "Klíčová slova"
@@ -546,7 +557,8 @@ def process_article_id(
     article_id, output_dir=None, filename=None, selected_categories=None
 ):
     """Process single article ID (for parallel execution) with duplicate prevention."""
-    # Check if already processed
+    # Fast-fail on duplicates before network request
+
     with FILE_LOCK:
         if article_id in PROCESSED_IDS:
             print(f"✗ ID {article_id}: Already processed (duplicate)")
@@ -555,14 +567,14 @@ def process_article_id(
     
     article_data = fetch_article_by_id(article_id)
     if article_data:
-        # Filter by category if specified
+
         if selected_categories:
             article_category = article_data.get("category", "Uncategorized")
             if article_category not in selected_categories:
                 print(f"✗ ID {article_id}: Category '{article_category}' not selected")
                 return None
 
-        # Debug info for keywords
+
         keywords_info = ""
         if article_data.get("keywords"):
             keywords_info = f" [Keywords: {article_data['keywords'][:30]}...]"
@@ -612,7 +624,7 @@ def scan_id_range_parallel_batch(
         with open(os.path.join(output_dir, filename), "w", encoding="utf-8") as f:
             f.write("")  # Create empty file
 
-    # Process in batches (reverse order if requested)
+    # Iterate in chunks to allow progressive saving and Tor renewal
     for batch_num in range(total_batches):
         if reverse:
             # Start from highest ID and go down
@@ -674,7 +686,7 @@ def scan_id_range_parallel_batch(
             save_articles_progressively(all_found_articles, output_dir, filename)
             last_save_count = current_count
 
-        # Shorter delay between batches since we have Tor
+        # Short cooling period to be nice to the server
         if batch_num < total_batches - 1:
             delay = random.uniform(2, 5)  # Increased for stability
             print(f"Waiting {delay:.1f} seconds before next batch...")
@@ -713,7 +725,7 @@ def scan_id_range_parallel(
         f"(step: {step}, workers: {max_workers})"
     )
 
-    # Create list of IDs to process
+
     id_list = list(range(min_id, max_id + 1, step))
     found_articles = []
     article_count = 0
@@ -764,6 +776,7 @@ def scan_id_range_parallel(
 
 def scan_id_range(min_id, max_id, step=1, output_dir=None, filename=None):
     """Scan a range of IDs to find all available articles with progressive saving."""
+
     print(f"\nScanning ID range: {min_id} - {max_id} (step: {step})")
     found_articles = []
 
@@ -832,10 +845,9 @@ def fetch_full_content(url):
         except UnicodeDecodeError:
             content = raw_content.decode("utf-8", errors="ignore")
 
-        # Parse HTML with BeautifulSoup
         soup = BeautifulSoup(content, "html.parser")
 
-        # Remove script and style elements
+        # Strip non-content elements
         for script in soup(["script", "style", "nav", "header", "footer", "aside"]):
             script.decompose()
 
@@ -864,7 +876,7 @@ def fetch_full_content(url):
                         full_text = text
                 break
 
-        # If no specific content found, get all text
+        # Fallback: dump all text
         if not full_text:
             full_text = soup.get_text(separator=" ", strip=True)
 
@@ -882,7 +894,8 @@ def fetch_latest_rss_articles():
     """Fetch latest articles from RSS feeds to find the newest ID."""
     print("Fetching latest articles from RSS feeds to find newest ID...")
 
-    # Use only main RSS feed for speed
+
+    # RSS is faster/lighter than parsing the main page
     main_feed = "https://www.protext.cz/rss/cz.php"
     all_ids = []
 
@@ -1182,7 +1195,7 @@ def main():
 
     print("=" * 50)
 
-    # Check and setup Tor
+    # Ensure Tor is ready before starting heavy scraping
     print("Checking Tor connection...")
     if not check_tor_connection():
         print("Attempting to start Tor service...")
@@ -1196,7 +1209,7 @@ def main():
     print("Tor is ready!")
     print()
 
-    # Get latest article ID from RSS feeds
+    # Auto-detect latest ID to avoid scanning potentially empty future IDs
     latest_id, oldest_id = fetch_latest_rss_articles()
     if not latest_id:
         print("Could not determine latest article ID. Using fallback range.")
@@ -1214,7 +1227,7 @@ def main():
 
     selected_categories = None
     if category_choice == "y":
-        # First try to load categories from existing file
+        # Load cached categories or fetch new ones
         sorted_categories = get_categories_from_file()
 
         # If no file exists, scrape a small sample
@@ -1251,7 +1264,7 @@ def main():
     print(f"Output file: {filename}")
     print()
 
-    # Tor scraping menu with dynamic range
+    # Menu
     print("🥷 TOR SCRAPING MODE:")
     print(f"1. TEST - range {latest_id-99}-{latest_id} (quick test)")
     print(f"2. SMALL - range {latest_id-999}-{latest_id} (estimate: ~500-800 articles)")

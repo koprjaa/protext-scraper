@@ -1,147 +1,75 @@
-# protext-scraper
+![Status](https://img.shields.io/badge/status-prototype-lightgrey) ![Python](https://img.shields.io/badge/python-3.13-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
-Scraper extrahuje obsah článků z portálu Protext.cz včetně metadat a umožňuje analýzu podle kategorií. Data jsou ukládána ve formátu JSON.
+# Overview
+Protext Scraper is a high-performance, concurrent web scraper designed to extract press releases and PR content from Protext.cz. It utilizes Tor circuit rotation and randomized user agents to bypass rate limiting and ensure reliable data collection.
 
-## Kontext eseje
+# Motivation
+This project was developed to demonstrate engineering capabilities in handling protected web sources, concurrent network programming, and robust error handling. It serves as a proof-of-concept for reliable data extraction infrastructure rather than a production-ready application.
 
-Projekt byl vytvořen jako součást eseje v předmětu **4IT550 - Competitive Intelligence** v ZS 2025/2026. Scraper slouží pro získání datové sady tiskových zpráv z portálu Protext.cz potřebného pro kvantitativní obsahovou analýzu (QCA).
+# What This Project Does
+The application systematically iterates through article IDs or processes RSS feeds to locate valid content. For each identified article, it downloads the HTML, detects the encoding (handling legacy Windows-1250 often used in Czech web archives), sanitizes the content by stripping non-text elements, and extracts metadata such as title, date, and keywords. The final output is aggregated into a machine-readable JSON format.
 
-## Jak funguje scraping
+# Architecture
+The system follows a concurrent worker pool pattern:
+1.  **Input Generation**: An ID range is generated based on RSS feed analysis or user input.
+2.  **Worker Pool**: A `ThreadPoolExecutor` spawns worker threads to process IDs in parallel.
+3.  **Network Layer**: Each request is routed through a local Tor SOCKS5 proxy.
+4.  **Resilience Layer**: The system monitors response codes; 429 (Too Many Requests) or 403 (Forbidden) trigger a Tor circuit renewal (New Identity) and exponential backoff.
+5.  **Storage**: Validated data is written to a JSON file using a thread-safe locking mechanism.
 
-Scraper používá kombinovaný přístup:
+# Tech Stack
+-   **Language**: Python 3.13
+-   **Networking**: `requests`, `pysocks` (SOCKS proxy support)
+-   **Parsing**: `BeautifulSoup4` (HTML parsing)
+-   **Encoding**: `chardet` (Character set detection)
+-   **Concurrency**: `concurrent.futures` (Threading)
+-   **Proxy**: Tor Service (external dependency)
 
-1. **RSS feed pro zjištění rozsahu**: RSS feed z Protext.cz (`https://www.protext.cz/rss/cz.php`) se používá pouze pro zjištění nejnovějšího ID článku a určení rozsahu pro skenování
-2. **Přímé ID skenování**: Hlavní scraping probíhá přímým procházením rozsahu ID článků. Scraper načítá každý článek přímo podle URL `https://www.protext.cz/zprava.php?id={article_id}` a extrahuje jeho obsah
+# Data Sources
+-   **Primary**: https://www.protext.cz/ (Direct article access via ID)
+-   **Discovery**: https://www.protext.cz/rss/cz.php (RSS feed for latest ID detection)
 
-Pro každý článek scraper extrahuje:
-- Titulky a hlavní obsah
-- Datum publikace
-- Kategorii článku
-- Metadata (ID, URL)
+# Key Design Decisions
+-   **ID-based Iteration**: The target site exposes sequential integer IDs for articles. Iterating through these IDs O(1) proved more reliable and exhaustive than traversing pagination, which can be inconsistent or limited in depth.
+-   **Tor & User-Agents**: Standard IP rotation was insufficient due to aggressive blocking. Integrating the Tor control port allows the application to programmatically request a new exit node ("New Identity") immediately upon detection of a block, rather than waiting for timeouts.
+-   **JSON Storage**: JSON was selected for the output format to prioritize portability and ease of inspection over the complexity of setting up a relational database for this specific demonstration scope.
 
-Scraper používá etické postupy včetně rate limitingu, zpoždění mezi požadavky a rotace User-Agentů. Pro anonymní přístup lze použít Tor proxy.
+# Limitations
+-   **Tor Dependency**: The application requires a running Tor service on `localhost:9050` and control port on `9051`. It cannot function without this external service.
+-   **Stateless Execution**: The scraper does not maintain a persistent state file of scraped IDs between runs. Restarting a job requires manually specifying the range or relying on the "check for duplicates" logic which incurs network overhead.
+-   **Vertical Scaling**: As a single-node application, scraping speed is tied to the local machine's resource limits and the latency of the Tor network.
 
-## Co dataset obsahuje
+# How to Run
+1.  **Install Tor**:
+    -   macOS: `brew install tor && brew services start tor`
+    -   Linux: `sudo apt install tor && sudo systemctl start tor`
+2.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  **Run Application**:
+    ```bash
+    python3 main.py
+    ```
 
-Dataset obsahuje data ve formátu JSON. Tiskové zprávy jsou strukturovány podle obrácené pyramidy (nejdůležitější informace na začátku). Každý záznam obsahuje:
+# Example Usage
+Upon launching, the interactive menu provides several modes. To scrape the latest 100 articles:
 
-- **title**: Název tiskové zprávy
-- **content**: Celý textový obsah článku
-- **link**: Odkaz na původní článek
-- **id**: Unikátní ID článku z Protext.cz
-- **date**: Datum publikace
-- **keywords**: Klíčová slova
-- **category**: Kategorie článku (např. "Finance, ekonomika", "IT, telekomunikace")
-
-### Příklad struktury záznamu
-
-```json
-{
-  "title": "Mezinárodní týden darování krevní plazmy: Odebraná plazma je nezbytná pro záchranu životů",
-  "content": "Plazma tvoří přibližně 55 % lidské krve a obsahuje stovky životně důležitých proteinů...",
-  "link": "https://www.protext.cz/zprava.php?id=54652",
-  "id": 54652,
-  "date": "Praha 10. října 2025 (PROTEXT)",
-  "keywords": "Protext-ČR-zdraví-farmacie-krev-firmy-BioLife",
-  "category": "Chemický a farmaceutický průmysl"
-}
+```text
+🥷 TOR SCRAPING MODE:
+1. TEST - range 199900-200000 (quick test)
+...
+Enter choice: 1
 ```
 
-## Jak probíhá analýza
+# Future Improvements
+-   **Database Backend**: Migrate from JSON to SQLite or PostgreSQL to support resumable scrapes and complex querying.
+-   **Dockerization**: Containerize the application and the Tor service into a `docker-compose` setup for one-command deployment.
+-   **Distributed Workers**: Decouple the scraping logic from the scheduler to allow multiple worker nodes to scrape distinct ranges concurrently.
 
-Scraper obsahuje analýzu kategorií, která:
+# Author
+Jan Alexandr Kopřiva
+jan.alexandr.kopriva@gmail.com
 
-1. **Kategorizuje** načtené články podle jejich zařazení na zdrojovém portálu
-2. **Generuje statistiky** o rozložení článků napříč kategoriemi
-3. **Umožňuje filtrování** datasetu podle vybraných kategorií
-4. **Exportuje analýzu** do samostatného JSON souboru
-
-Výsledky jsou zobrazeny v konzoli i uloženy do souboru.
-
-## Technologie použité v projektu
-
-- **Python 3**
-- **BeautifulSoup4** - parsování HTML
-- **Requests** - HTTP požadavky
-- **lxml** - XML/HTML parser
-
-## Struktura repozitáře
-
-```
-protext-scraper/
-├── main.py                     # Hlavní scraper
-├── requirements.txt            # Python závislosti
-├── README.md                   # Dokumentace
-├── data/
-│   └── categories.json         # Seznam kategorií
-└── output/                     # Výstupní soubory (generováno při běhu)
-    ├── content_YYYYMMDD_HHMMSS.json
-    └── categories_YYYYMMDD_HHMMSS.json
-```
-
-## Jak spustit scraper
-
-### Požadavky
-
-- Python 3.7 nebo vyšší
-- Nainstalované závislosti z `requirements.txt`
-
-### Instalace
-
-1. Naklonujte repozitář:
-```bash
-git clone https://github.com/koprjaa/protext-scraper.git
-cd protext-scraper
-```
-
-2. Nainstalujte závislosti:
-```bash
-pip install -r requirements.txt
-```
-
-### Spuštění
-
-Spusťte scraper příkazem:
-```bash
-python main.py
-```
-
-Scraper nabídne interaktivní menu s možnostmi:
-- Různé rozsahy ID pro skenování (TEST, SMALL, MEDIUM, LARGE, MASSIVE, MAXIMUM)
-- Vlastní rozsah ID
-- Analýza kategorií
-
-Výstupy se automaticky ukládají do složky `output/` ve formátu JSON. Při každém novém spuštění se staré reporty automaticky mažou.
-
-### Volitelné: Tor proxy
-
-Pro anonymní přístup můžete použít Tor. Ujistěte se, že máte spuštěný Tor service na `127.0.0.1:9050`. Scraper automaticky detekuje dostupnost Tor připojení.
-
-## Etické a právní upozornění
-
-**Důležité**: Tento scraper je určen výhradně pro akademické a výzkumné účely.
-
-### Omezení použití
-
-- Nepoužívej scraper pro komerční účely bez souhlasu vlastníků obsahu
-- Neobcházej bezpečnostní opatření webových stránek
-- Respektuj podmínky použití zdrojového webu a strojově čitelné výhrady v `robots.txt`
-- Dataset nesmí být šířen ani používán pro trénink modelů strojového učení bez souhlasu držitele práv
-
-### Text a data mining (TDM)
-
-Pro akademické a výzkumné účely lze využít výjimku podle § 39c nebo § 39d zákona č. 121/2000 Sb., o právu autorském.
-
-**Důležité omezení:**
-
-- **Výhrada autora**: TDM výjimka podle § 39c se nepoužije, pokud si autor užití výslovně vyhradil (zejména u děl zpřístupňovaných on-line pomocí strojově čitelných prostředků). Protext.cz ve svém `robots.txt` uvádí výhradu proti některým user-agentům pro strojové učení; tuto strojově čitelnou výhradu je nutné respektovat.
-
-- **Uchovávání dat**: Podle § 39c smí být rozmnoženina uchovávána pouze po dobu nezbytnou pro provedení analýzy. Podle § 39d (pro vědecký výzkum) lze rozmnoženiny uchovávat po dobu nezbytnou pro ověření výsledků výzkumu, ale musí být zabezpečené a nesmějí sloužit k přímému či nepřímému hospodářskému prospěchu.
-
-- **Šíření dat**: Dataset nesmí být dále šířen. Kopie textů musí být uchovávány pouze po dobu nezbytnou pro výzkum.
-
-- **Další využití**: Jakékoli další využití dat (např. trénink modelů strojového učení, komerční využití) vyžaduje souhlas držitele práv. Tento scraper je určen pouze pro akademickou analýzu tiskových zpráv bez dalšího komerčního využití.
-
-## Licence
-
-Projekt je licencován pod MIT licencí. Viz soubor [LICENSE](LICENSE) pro detaily.
+# License
+MIT
