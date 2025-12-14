@@ -86,12 +86,12 @@ def check_tor_connection():
 
         session = requests.Session()
         session.proxies = {
-            "http": "socks5://127.0.0.1:9050",
-            "https": "socks5://127.0.0.1:9050",
+            "http": "socks5h://127.0.0.1:9050",
+            "https": "socks5h://127.0.0.1:9050",
         }
 
         # Test with a simple request
-        response = session.get("https://httpbin.org/ip", timeout=10)
+        response = session.get("https://httpbin.org/ip", timeout=30)
         if response.status_code == 200:
             ip_info = response.json()
             print(f"Tor connection active - IP: {ip_info.get('origin', 'Unknown')}")
@@ -143,8 +143,8 @@ def get_tor_session():
     """Create a requests session with Tor proxy."""
     session = requests.Session()
     session.proxies = {
-        "http": "socks5://127.0.0.1:9050",
-        "https": "socks5://127.0.0.1:9050",
+        "http": "socks5h://127.0.0.1:9050",
+        "https": "socks5h://127.0.0.1:9050",
     }
     return session
 
