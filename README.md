@@ -1,75 +1,88 @@
-![Status](https://img.shields.io/badge/status-prototype-lightgrey) ![Python](https://img.shields.io/badge/python-3.13-blue) ![License](https://img.shields.io/badge/license-MIT-green)
+# protext-scraper
 
-# 1. Overview
-Protext Scraper is a high-performance, concurrent web scraper designed to extract press releases and PR content from Protext.cz. It utilizes Tor circuit rotation and randomized user agents to bypass rate limiting and ensure reliable data collection.
+**Concurrent scraper for Czech press-release archive Protext.cz — ID-based enumeration over Tor, with circuit rotation on every block.**
 
-# 2. Motivation
-This project was implemented as part of the semester essay for the course **4IT550 - Competitive Intelligence**. It demonstrates engineering capabilities in handling protected web sources, concurrent network programming, and robust error handling, serving as a proof-of-concept for reliable technical data extraction infrastructure.
+![python](https://img.shields.io/badge/python-3.13-3776AB?style=flat-square&logo=python&logoColor=white)
+![license](https://img.shields.io/badge/license-MIT-A31F34?style=flat-square)
+![status](https://img.shields.io/badge/status-prototype-lightgrey?style=flat-square)
+![tor](https://img.shields.io/badge/Tor-SOCKS5-7E4798?style=flat-square&logo=torproject&logoColor=white)
+![requests](https://img.shields.io/badge/requests-2.x-000?style=flat-square)
+![bs4](https://img.shields.io/badge/bs4-4.x-777?style=flat-square)
 
-# 3. What This Project Does
-The application systematically iterates through article IDs or processes RSS feeds to locate valid content. For each identified article, it downloads the HTML, detects the encoding (handling legacy Windows-1250 often used in Czech web archives), sanitizes the content by stripping non-text elements, and extracts metadata such as title, date, and keywords. The final output is aggregated into a machine-readable JSON format.
+Built for a **4IT550 Competitive Intelligence** semester paper at VŠE — the task was to demonstrate robust data extraction from protected sources. Protext.cz is an archive of PR releases going back two decades, aggressive about blocking automated access and often served in legacy `windows-1250` encoding. This scraper handles both.
 
-# 4. Architecture
-The system follows a concurrent worker pool pattern:
-1.  **Input Generation**: An ID range is generated based on RSS feed analysis or user input.
-2.  **Worker Pool**: A `ThreadPoolExecutor` spawns worker threads to process IDs in parallel.
-3.  **Network Layer**: Each request is routed through a local Tor SOCKS5 proxy.
-4.  **Resilience Layer**: The system monitors response codes; 429 (Too Many Requests) or 403 (Forbidden) trigger a Tor circuit renewal (New Identity) and exponential backoff.
-5.  **Storage**: Validated data is written to a JSON file using a thread-safe locking mechanism.
+## How it works
 
-# 5. Tech Stack
--   **Language**: Python 3.13
--   **Networking**: `requests`, `pysocks` (SOCKS proxy support)
--   **Parsing**: `BeautifulSoup4` (HTML parsing)
--   **Encoding**: `chardet` (Character set detection)
--   **Concurrency**: `concurrent.futures` (Threading)
--   **Proxy**: Tor Service (external dependency)
-
-# 6. Data Sources
--   **Primary**: https://www.protext.cz/ (Direct article access via ID)
--   **Discovery**: https://www.protext.cz/rss/cz.php (RSS feed for latest ID detection)
-
-# 7. Key Design Decisions
--   **ID-based Iteration**: The target site exposes sequential integer IDs for articles. Iterating through these IDs O(1) proved more reliable and exhaustive than traversing pagination, which can be inconsistent or limited in depth.
--   **Tor & User-Agents**: Standard IP rotation was insufficient due to aggressive blocking. Integrating the Tor control port allows the application to programmatically request a new exit node ("New Identity") immediately upon detection of a block, rather than waiting for timeouts.
--   **JSON Storage**: JSON was selected for the output format to prioritize portability and ease of inspection over the complexity of setting up a relational database for this specific demonstration scope.
-
-# 8. Limitations
--   **Tor Dependency**: The application requires a running Tor service on `localhost:9050` and control port on `9051`. It cannot function without this external service.
--   **Stateless Execution**: The scraper does not maintain a persistent state file of scraped IDs between runs. Restarting a job requires manually specifying the range or relying on the "check for duplicates" logic which incurs network overhead.
--   **Vertical Scaling**: As a single-node application, scraping speed is tied to the local machine's resource limits and the latency of the Tor network.
-
-# 9. How to Run
-1.  **Install Tor**:
-    -   macOS: `brew install tor && brew services start tor`
-    -   Linux: `sudo apt install tor && sudo systemctl start tor`
-2.  **Install Dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
-3.  **Run Application**:
-    ```bash
-    python3 main.py
-    ```
-
-# 10. Example Usage
-Upon launching, the interactive menu provides several modes. To scrape the latest 100 articles:
-
-```text
-🥷 TOR SCRAPING MODE:
-1. TEST - range 199900-200000 (quick test)
-...
-Enter choice: 1
+```
+  ┌────────────────────────┐
+  │ ID range / RSS feed IDs│
+  └──────────┬─────────────┘
+             ▼
+  ┌────────────────────────┐      ┌───────────────┐
+  │  ThreadPoolExecutor    │◀────▶│ Tor SOCKS5    │
+  │  (parallel workers)    │      │ 127.0.0.1:9050│
+  └──────────┬─────────────┘      └───────────────┘
+             │                          ▲
+             │   on 429/403 →           │  control port
+             │   renew circuit ─────────┘
+             ▼
+  ┌────────────────────────┐
+  │ chardet → bs4 → JSON   │
+  │ (thread-safe write)    │
+  └────────────────────────┘
 ```
 
-# 11. Future Improvements
--   **Database Backend**: Migrate from JSON to SQLite or PostgreSQL to support resumable scrapes and complex querying.
--   **Dockerization**: Containerize the application and the Tor service into a `docker-compose` setup for one-command deployment.
--   **Distributed Workers**: Decouple the scraping logic from the scheduler to allow multiple worker nodes to scrape distinct ranges concurrently.
+Key ingredients:
 
-# 12. Author
-Jan Alexandr Kopřiva
-jan.alexandr.kopriva@gmail.com
+- **ID-based enumeration** — Protext exposes sequential integer article IDs. Iterating 199900→200000 is both more reliable and more exhaustive than paginated crawling, which caps or skips.
+- **Tor circuit renewal** — plain IP rotation isn't enough; the site profiles behavior. On 429/403 the worker hits the Tor control port (`9051`) and requests `NEWNYM` for a fresh exit node, then backs off exponentially.
+- **Encoding detection** — a good chunk of the archive predates UTF-8. `chardet` per response, `errors='replace'` fallback on decode.
+- **Randomised User-Agent** per request from a rotated list.
+- **Thread-safe JSON append** with a `threading.Lock` — simple, portable, good enough for a prototype.
 
-# 13. License
-MIT
+## Running
+
+Tor has to be running locally first:
+
+```bash
+# macOS
+brew install tor && brew services start tor
+# Debian/Ubuntu
+sudo apt install tor && sudo systemctl start tor
+# Windows
+# install the Tor Expert Bundle, run tor.exe with default settings (9050/9051)
+```
+
+Then:
+
+```bash
+uv venv
+uv pip install -r requirements.txt
+python main.py
+```
+
+An interactive menu prompts for scrape mode:
+
+```
+TOR SCRAPING MODE:
+1. TEST - range 199900-200000 (quick test)
+2. LATEST - last 100 IDs from RSS
+3. CUSTOM - specify range
+...
+```
+
+Output lands in `output/*.json`, one article per entry, with title/date/keywords/body/HTML.
+
+## Why JSON, not SQLite
+
+For a demonstrator of one archive the friction of setting up a real DB wasn't worth it — JSON is portable, diffable, and easy to grep. If the next iteration hits Postgres/S3, migration is ~20 lines.
+
+## Known limits
+
+- **Tor is mandatory** — no running daemon, no scraping. Script detects absence and prints platform-specific install hints before exiting.
+- **Stateless between runs** — no persistent "already-scraped IDs" index beyond the output JSON. Re-running a range re-requests everything but dedupes at write time.
+- **Single-node** — throughput is bounded by local worker count × Tor network latency. For serious volume, shard the ID range across machines.
+
+## License
+
+[MIT](LICENSE)
