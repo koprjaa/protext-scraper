@@ -1,87 +1,79 @@
 # protext-scraper
 
-**Concurrent scraper for Czech press-release archive Protext.cz — ID-based enumeration over Tor, with circuit rotation on every block.**
+Concurrent scraper for the Czech press release archive Protext.cz. It enumerates article IDs over Tor and requests a new circuit whenever the site blocks it.
 
 ![python](https://img.shields.io/badge/python-3.13-3776AB?style=flat-square&logo=python&logoColor=white)
 ![license](https://img.shields.io/badge/license-MIT-A31F34?style=flat-square)
 ![status](https://img.shields.io/badge/status-prototype-lightgrey?style=flat-square)
-![tor](https://img.shields.io/badge/Tor-SOCKS5-7E4798?style=flat-square&logo=torproject&logoColor=white)
-![requests](https://img.shields.io/badge/requests-2.x-000?style=flat-square)
-![bs4](https://img.shields.io/badge/bs4-4.x-777?style=flat-square)
 
-Built for a **4IT550 Competitive Intelligence** semester paper at VŠE — the task was to demonstrate robust data extraction from protected sources. Protext.cz is an archive of PR releases going back two decades, aggressive about blocking automated access and often served in legacy `windows-1250` encoding. This scraper handles both.
+Written for a 4IT550 Competitive Intelligence term paper at Prague University of Economics and Business. The task was to extract data from a source that resists it. Protext.cz holds two decades of press releases, blocks automated access, and often serves legacy `windows-1250` encoding.
 
-## How it works
+## Install
 
-```
-  ┌────────────────────────┐
-  │ ID range / RSS feed IDs│
-  └──────────┬─────────────┘
-             ▼
-  ┌────────────────────────┐      ┌───────────────┐
-  │  ThreadPoolExecutor    │◀────▶│ Tor SOCKS5    │
-  │  (parallel workers)    │      │ 127.0.0.1:9050│
-  └──────────┬─────────────┘      └───────────────┘
-             │                          ▲
-             │   on 429/403 →           │  control port
-             │   renew circuit ─────────┘
-             ▼
-  ┌────────────────────────┐
-  │ chardet → bs4 → JSON   │
-  │ (thread-safe write)    │
-  └────────────────────────┘
-```
-
-Key ingredients:
-
-- **ID-based enumeration** — Protext exposes sequential integer article IDs. Iterating 199900→200000 is both more reliable and more exhaustive than paginated crawling, which caps or skips.
-- **Tor circuit renewal** — plain IP rotation isn't enough; the site profiles behavior. On 429/403 the worker hits the Tor control port (`9051`) and requests `NEWNYM` for a fresh exit node, then backs off exponentially.
-- **Encoding detection** — a good chunk of the archive predates UTF-8. `chardet` per response, `errors='replace'` fallback on decode.
-- **Randomised User-Agent** per request from a rotated list.
-- **Thread-safe JSON append** with a `threading.Lock` — simple, portable, good enough for a prototype.
-
-## Running
-
-Tor has to be running locally first:
+Tor must run locally first.
 
 ```bash
 # macOS
 brew install tor && brew services start tor
-# Debian/Ubuntu
+
+# Debian and Ubuntu
 sudo apt install tor && sudo systemctl start tor
-# Windows
-# install the Tor Expert Bundle, run tor.exe with default settings (9050/9051)
+
+# Windows: install the Tor Expert Bundle and run tor.exe with the default ports 9050 and 9051.
 ```
 
-Then:
+Then install the Python dependencies:
 
 ```bash
 uv venv
 uv pip install -r requirements.txt
+```
+
+## Use
+
+```bash
 python main.py
 ```
 
-An interactive menu prompts for scrape mode:
+A menu asks for the scrape mode:
 
 ```
 TOR SCRAPING MODE:
-1. TEST - range 199900-200000 (quick test)
-2. LATEST - last 100 IDs from RSS
-3. CUSTOM - specify range
-...
+1. TEST    range 199900-200000 (quick test)
+2. LATEST  last 100 IDs from RSS
+3. CUSTOM  specify range
 ```
 
-Output lands in `output/*.json`, one article per entry, with title/date/keywords/body/HTML.
+Output goes to `output/*.json`. Each entry holds the title, date, keywords, body text, and the raw HTML.
 
-## Why JSON, not SQLite
+## How it works
 
-For a demonstrator of one archive the friction of setting up a real DB wasn't worth it — JSON is portable, diffable, and easy to grep. If the next iteration hits Postgres/S3, migration is ~20 lines.
+```
+ID range or RSS feed IDs
+        |
+        v
+ThreadPoolExecutor  <-->  Tor SOCKS5 on 127.0.0.1:9050
+        |                        ^
+        | on 429 or 403          | control port 9051
+        +--- renew circuit ------+
+```
 
-## Known limits
+Five points explain the design.
 
-- **Tor is mandatory** — no running daemon, no scraping. Script detects absence and prints platform-specific install hints before exiting.
-- **Stateless between runs** — no persistent "already-scraped IDs" index beyond the output JSON. Re-running a range re-requests everything but dedupes at write time.
-- **Single-node** — throughput is bounded by local worker count × Tor network latency. For serious volume, shard the ID range across machines.
+- **ID enumeration instead of pagination.** Article URLs carry sequential IDs. Walking 199900 to 200000 is more reliable and more complete than a paginated crawl, which caps out or skips entries.
+- **Circuit renewal.** IP rotation alone does not work, because the site profiles behavior. On a 429 or a 403 the worker sends `NEWNYM` to the Tor control port for a new exit node, then backs off exponentially.
+- **Encoding detection.** Much of the archive predates UTF-8. The scraper runs `chardet` per response and falls back to `errors='replace'`.
+- **User-Agent rotation.** Each request picks an agent from a list.
+- **Thread safe writes.** A `threading.Lock` guards the JSON append.
+
+Output goes to JSON, not to a database. For one archive the setup cost of a real database is not worth it. JSON is portable, diffable, and easy to grep. A move to Postgres or S3 costs about 20 lines.
+
+## Limits
+
+- Tor is required. Without a running daemon the script prints install hints for the platform and exits.
+- The scraper keeps no state between runs beyond the output files. A repeated range requests everything again, then removes duplicates at write time.
+- Throughput is bound by the local worker count and Tor latency. Higher volume needs the ID range split across machines.
+- No tests.
 
 ## License
 
