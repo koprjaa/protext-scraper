@@ -22,6 +22,7 @@ from protext_scraper.parsing import (
     clean_content,
     clean_keywords,
     extract_category,
+    extract_content,
     extract_keywords,
     extract_protext_id,
 )
@@ -103,47 +104,79 @@ def test_a_url_without_a_protext_id_gives_none(url):
     assert extract_protext_id(url) is None
 
 
-# --- extract_keywords -------------------------------------------------------
+# --- the article page template ------------------------------------------------
+
+# What the live pages carry, checked against articles 10000, 30000 and 58633.
+ARTICLE = """
+<html><body>
+  <div class="nav">Přejít k obsahu | Přejít k hlavnímu menu</div>
+  <div class="fulltext">Praha 2. srpna 2026 (PROTEXT) - Tělo článku, dost dlouhé na to,
+     aby prošlo minimální délkou, kterou clean_content vyžaduje na skutečný obsah.</div>
+  <div class="fulltext-metadata">
+    <p><strong>Klíčová slova</strong><br/>ČR-Korea-víra-právo</p>
+    <p><strong>Kategorie</strong><br/><span>Náboženství</span><br/><span>Politika, veřejná správa</span><br/></p>
+  </div>
+</body></html>
+"""
 
 
-def test_the_meta_tag_is_preferred():
-    page = soup(
-        '<html><head><meta name="keywords" content="ekonomika, finance"></head>'
-        "<body><p>Klíčová slova: něco jiného</p></body></html>"
-    )
-    assert extract_keywords(page) == "ekonomika, finance"
+# --- extract_content ---------------------------------------------------------
 
 
-@pytest.mark.parametrize("label", ["Klíčová slova", "Keywords", "Tagy", "Tags"])
-def test_every_label_the_site_has_used_is_recognized(label):
-    page = soup(f"<html><body><p>{label} ekonomika, finance</p></body></html>")
-    assert extract_keywords(page) == "ekonomika, finance"
+def test_the_body_comes_from_its_own_container():
+    assert "Tělo článku" in extract_content(soup(ARTICLE))
 
 
-def test_the_label_lookup_reads_the_label_it_is_on():
-    """A closure over the loop variable would test against the last label."""
-    page = soup("<html><body><p>Tagy energetika</p></body></html>")
-    assert extract_keywords(page) == "energetika"
+def test_the_navigation_is_left_out_of_the_body():
+    """Reading the whole document swept the menu into every article."""
+    assert "Přejít k obsahu" not in extract_content(soup(ARTICLE))
+
+
+def test_a_page_without_the_container_gives_empty():
+    assert extract_content(soup("<html><body><p>Nic</p></body></html>")) == ""
+
+
+# --- extract_keywords --------------------------------------------------------
+
+
+def test_the_keywords_are_read_from_the_metadata_box():
+    assert extract_keywords(soup(ARTICLE)) == "ČR-Korea-víra-právo"
+
+
+def test_the_keyword_label_is_not_part_of_the_result():
+    assert "Klíčová slova" not in extract_keywords(soup(ARTICLE))
 
 
 def test_a_page_with_no_keywords_gives_empty():
     assert extract_keywords(soup("<html><body><p>Text</p></body></html>")) == ""
 
 
-def test_an_empty_meta_tag_falls_through_to_the_labels():
+def test_a_metadata_box_without_a_keyword_paragraph_gives_empty():
     page = soup(
-        '<html><head><meta name="keywords" content=""></head>'
-        "<body><p>Klíčová slova ekonomika</p></body></html>"
+        '<html><body><div class="fulltext-metadata">'
+        "<p><strong>Kategorie</strong><br/><span>Sport</span></p></div></body></html>"
     )
-    assert extract_keywords(page) == "ekonomika"
+    assert extract_keywords(page) == ""
 
 
-# --- extract_category -------------------------------------------------------
+# --- extract_category --------------------------------------------------------
 
 
-def test_the_category_is_read_from_the_itemprop_span():
-    page = soup('<html><body><span itemprop="about"> Ekonomika </span></body></html>')
-    assert extract_category(page) == "Ekonomika"
+def test_every_category_is_returned_not_only_the_first():
+    """An article is filed under several. Returning one threw the rest away."""
+    assert extract_category(soup(ARTICLE)) == "Náboženství, Politika, veřejná správa"
+
+
+def test_the_category_label_is_not_part_of_the_result():
+    assert "Kategorie" not in extract_category(soup(ARTICLE))
+
+
+def test_a_single_category_comes_back_on_its_own():
+    page = soup(
+        '<html><body><div class="fulltext-metadata">'
+        "<p><strong>Kategorie</strong><br/><span>Sport</span></p></div></body></html>"
+    )
+    assert extract_category(page) == "Sport"
 
 
 def test_a_page_with_no_category_gives_empty():

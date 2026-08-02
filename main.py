@@ -32,6 +32,7 @@ from bs4 import BeautifulSoup
 from protext_scraper.parsing import (
     clean_content,
     extract_category,
+    extract_content,
     extract_keywords,
     extract_protext_id,
 )
@@ -307,7 +308,10 @@ PROCESSED_IDS = set()
 
 def fetch_article_by_id(article_id):
     """Fetch article content by ID from Protext.cz."""
-    url = f"https://www.protext.cz/zprava.php?id={article_id}"
+    # The canonical form. /zprava.php?id= and /zprava/<id> both still work but
+    # 301 here, and the scraper walks a whole ID range, so that is one wasted
+    # round trip per article over Tor.
+    url = f"https://www.protext.cz/zpravy/show/{article_id}"
     try:
         response = make_request_with_retry(url)
         if not response:
@@ -338,43 +342,10 @@ def fetch_article_by_id(article_id):
         if title_elem:
             article_data["title"] = clean_content(title_elem.get_text())
 
-        # Try multiple selectors to handle legacy/varied layouts
-        content_selectors = [
-
-            "#articlebody",  # Main content area
-            '[itemprop="articleBody"]',  # Schema.org markup
-            ".omega.seven.columns",  # Content column
-            'article[role="main"]',  # Main article
-            ".article-content",
-            ".content",
-            "article",
-            "#content",
-        ]
-
-        full_text = ""
-        for selector in content_selectors:
-            elements = soup.select(selector)
-            if elements:
-                for element in elements:
-                    # Remove unwanted elements
-                    for unwanted in element.select(
-                        "script, style, nav, header, footer, aside, .note"
-                    ):
-                        unwanted.decompose()
-
-                    text = element.get_text(separator=" ", strip=True)
-                    if len(text) > len(full_text):
-                        full_text = text
-                break
-
-        if not full_text:
-            # Fallback: aggressive cleaning of raw text
-
-            for unwanted in soup.select("script, style, nav, header, footer, aside"):
-                unwanted.decompose()
-            full_text = soup.get_text(separator=" ", strip=True)
-
-        article_data["content"] = clean_content(full_text)
+        # Every article, old and new, renders through one template. The list of
+        # legacy selectors that used to be tried here matched none of them, so
+        # the fallback ran every time and swept the navigation into the body.
+        article_data["content"] = extract_content(soup)
         article_data["link"] = url
         article_data["id"] = article_id
 
