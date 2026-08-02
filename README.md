@@ -5,6 +5,7 @@ Concurrent scraper for the Czech press release archive Protext.cz. It enumerates
 ![python](https://img.shields.io/badge/python-3.13-3776AB?style=flat-square&logo=python&logoColor=white)
 ![license](https://img.shields.io/badge/license-MIT-A31F34?style=flat-square)
 ![status](https://img.shields.io/badge/status-prototype-lightgrey?style=flat-square)
+[![ci](https://github.com/koprjaa/protext-scraper/actions/workflows/ci.yml/badge.svg)](https://github.com/koprjaa/protext-scraper/actions/workflows/ci.yml)
 
 Written for a 4IT550 Competitive Intelligence term paper at Prague University of Economics and Business. The task was to extract data from a source that resists it. Protext.cz holds two decades of press releases, blocks automated access, and often serves legacy `windows-1250` encoding.
 
@@ -73,7 +74,19 @@ Output goes to JSON, not to a database. For one archive the setup cost of a real
 - Tor is required. Without a running daemon the script prints install hints for the platform and exits.
 - The scraper keeps no state between runs beyond the output files. A repeated range requests everything again, then removes duplicates at write time.
 - Throughput is bound by the local worker count and Tor latency. Higher volume needs the ID range split across machines.
-- No tests.
+- An article shorter than 50 characters after the markup comes off is treated as a stub and dropped. A genuinely short release is lost with it.
+
+## Development
+
+```bash
+uv run --extra dev ruff check .
+uv run --extra dev pytest -q
+```
+
+`src/protext_scraper/parsing.py` turns a page into fields and
+`src/protext_scraper/storage.py` writes results to disk. Neither imports Tor or
+the network, so the suite runs anywhere. CI runs on Python 3.10, 3.11, and 3.12,
+across Linux and Windows.
 
 ## License
 

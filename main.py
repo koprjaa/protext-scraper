@@ -7,21 +7,35 @@ Author: Jan Alexandr Kopřiva jan.alexandr.kopriva@gmail.com
 License: MIT
 """
 
-import requests
-import xml.etree.ElementTree as ET
-from datetime import datetime
-import re
-import chardet
-import os
-import glob
-import time
-import random
+import contextlib
 import json
-import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from bs4 import BeautifulSoup
-import subprocess
+import random
+import re
 import socket
+import subprocess
+import time
+import xml.etree.ElementTree as ET
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from pathlib import Path
+
+import chardet
+import requests
+from bs4 import BeautifulSoup
+
+from protext_scraper.parsing import (
+    clean_content,
+    extract_category,
+    extract_keywords,
+    extract_protext_id,
+)
+from protext_scraper.storage import (
+    FILE_LOCK,
+    count_categories,
+    filter_articles_by_categories,
+    load_articles,
+    save_articles_progressively,
+)
 
 # Diverse pool to evade fingerprinting
 USER_AGENTS = [
@@ -157,7 +171,7 @@ def renew_tor_circuit():
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)  # Add timeout
         sock.connect(("127.0.0.1", 9051))  # Tor control port
-        
+
         # Send authentication
         sock.send(b'AUTHENTICATE ""\r\n')
         response = sock.recv(1024)
@@ -165,7 +179,7 @@ def renew_tor_circuit():
             print("Tor authentication failed")
             sock.close()
             return False
-        
+
         # Send NEWNYM signal
         sock.send(b"SIGNAL NEWNYM\r\n")
         response = sock.recv(1024)
@@ -173,13 +187,13 @@ def renew_tor_circuit():
             print("Tor NEWNYM signal failed")
             sock.close()
             return False
-            
+
         sock.close()
         print("Tor circuit renewed - new IP")
         time.sleep(3)  # Wait for circuit to establish
-        return True
-        
-    except socket.timeout:
+        return True  # noqa: TRY300 - reads with the line above it
+
+    except TimeoutError:
         print("Tor circuit renewal timeout - continuing without renewal")
         return False
     except ConnectionRefusedError:
@@ -220,10 +234,7 @@ def make_request_with_retry(url, max_retries=3, base_delay=1, use_tor=True):
 
             # Route through Tor if enabled
 
-            if use_tor:
-                session = get_tor_session()
-            else:
-                session = requests.Session()
+            session = get_tor_session() if use_tor else requests.Session()
 
             session.headers.update(headers)
 
@@ -242,14 +253,14 @@ def make_request_with_retry(url, max_retries=3, base_delay=1, use_tor=True):
                     renew_tor_circuit()  # Get new IP only when blocked
                 time.sleep(retry_after)
                 continue
-            elif response.status_code == 403:
+            if response.status_code == 403:
                 print("Forbidden (403). Waiting longer...")
                 if use_tor:
                     print("Renewing Tor circuit due to 403...")
                     renew_tor_circuit()  # Get new IP only when blocked
                 time.sleep(random.uniform(10, 20))
                 continue
-            elif response.status_code == 503:
+            if response.status_code == 503:
                 print("Service unavailable (503). Waiting...")
                 if use_tor and attempt >= 1:  # Only renew after first retry
                     print("Renewing Tor circuit due to persistent 503...")
@@ -258,7 +269,7 @@ def make_request_with_retry(url, max_retries=3, base_delay=1, use_tor=True):
                 continue
 
             response.raise_for_status()
-            return response
+            return response  # noqa: TRY300 - reads with the line above it
 
         except requests.exceptions.RequestException as e:
             if attempt < max_retries - 1:
@@ -285,116 +296,7 @@ def make_request_with_retry(url, max_retries=3, base_delay=1, use_tor=True):
 
 
 # Prevent race conditions in parallel execution
-FILE_LOCK = threading.Lock()
 PROCESSED_IDS = set()
-
-
-def remove_duplicates_from_json(file_path):
-    """Remove duplicate articles from JSON file based on ID."""
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            articles = json.load(f)
-        
-        # Deduplicate by ID
-
-        unique_articles = {}
-        duplicates_count = 0
-        
-        for article in articles:
-            article_id = article.get("id")
-            if article_id:
-                if article_id in unique_articles:
-                    duplicates_count += 1
-                else:
-                    unique_articles[article_id] = article
-            else:
-                # Articles without ID - keep them but add a warning
-                unique_articles[f"no_id_{len(unique_articles)}"] = article
-        
-        # Convert back to list
-        cleaned_articles = list(unique_articles.values())
-        
-        # Save cleaned data
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(cleaned_articles, f, ensure_ascii=False, indent=2)
-        
-        print(f"Removed {duplicates_count} duplicate articles from {file_path}")
-        print(f"Original: {len(articles)} articles, Cleaned: {len(cleaned_articles)} articles")
-        
-        return cleaned_articles
-        
-    except Exception as e:
-        print(f"Error removing duplicates from {file_path}: {e}")
-        return None
-
-
-def save_articles_progressively(articles, output_dir, filename):
-    """Save articles to JSON file progressively with thread safety and duplicate prevention."""
-    if not articles:
-        return
-
-    try:
-        with FILE_LOCK:
-            file_path = os.path.join(output_dir, filename)
-
-            # Load existing data if file exists
-            existing_data = []
-            if os.path.exists(file_path):
-                try:
-                    with open(file_path, "r", encoding="utf-8") as f:
-                        existing_data = json.load(f)
-                except (json.JSONDecodeError, FileNotFoundError):
-                    existing_data = []
-
-            # Local cache of existing IDs for O(1) lookups
-
-            existing_ids = {article.get("id") for article in existing_data if article.get("id")}
-            
-            # Filter out duplicates from new articles
-            new_articles = []
-            duplicates_count = 0
-            for article in articles:
-                article_id = article.get("id")
-                if article_id and article_id not in existing_ids:
-                    new_articles.append(article)
-                    existing_ids.add(article_id)  # Add to set to prevent duplicates within batch
-                else:
-                    duplicates_count += 1
-
-            # Add only new articles
-            existing_data.extend(new_articles)
-
-            # Save updated data
-            with open(file_path, "w", encoding="utf-8") as f:
-                json.dump(existing_data, f, ensure_ascii=False, indent=2)
-
-            print(
-                f"Saved {len(new_articles)} new articles to {filename} "
-                f"(Skipped {duplicates_count} duplicates, Total: {len(existing_data)})"
-            )
-    except IOError as e:
-        print(f"Error saving file: {e}")
-
-
-def clean_content(text):
-    """Clean and filter content text."""
-    if not text:
-        return ""
-
-    # Remove CDATA tags if present
-    text = re.sub(r"<!\[CDATA\[(.*?)\]\]>", r"\1", text)
-
-    # Remove HTML tags
-    text = re.sub(r"<[^>]+>", "", text)
-
-    # Remove extra whitespace and normalize
-    text = re.sub(r"\s+", " ", text.strip())
-
-    # Filter out very short content
-    if len(text) < 50:
-        return ""
-
-    return text
 
 
 def fetch_article_by_id(article_id):
@@ -479,68 +381,13 @@ def fetch_article_by_id(article_id):
         if date_elem:
             article_data["date"] = date_elem.get_text().strip()
 
-        # Attempt to extract keywords via common patterns
-        keywords_text = ""
-        
-        # Method 1: Look for paragraph containing "Klíčová slova"
-        keywords_elem = soup.find(
-            "p", string=lambda text: text and "Klíčová slova" in text
-        )
-        if keywords_elem:
-            keywords_text = (
-                keywords_elem.get_text().replace("Klíčová slova", "").strip()
-            )
-        
-        # Method 2: Look for paragraph with strong tag containing "Klíčová slova"
-        if not keywords_text:
-            keywords_elem = soup.find("p", string=lambda text: text and "Klíčová slova" in text)
-            if keywords_elem:
-                # Get the full paragraph text
-                full_text = keywords_elem.get_text()
-                # Remove "Klíčová slova" and clean up
-                keywords_text = full_text.replace("Klíčová slova", "").strip()
-        
-        # Method 3: Look for any element containing "Klíčová slova" text
-        if not keywords_text:
-            keywords_elem = soup.find(string=lambda text: text and "Klíčová slova" in text)
-            if keywords_elem:
-                # Get parent element and extract text
-                parent = keywords_elem.parent
-                if parent:
-                    full_text = parent.get_text()
-                    keywords_text = full_text.replace("Klíčová slova", "").strip()
-        
-        # Method 4: Look for alternative keywords labels
-        if not keywords_text:
-            for keyword_label in ["Keywords", "Klíčová slova", "Tagy", "Tags"]:
-                keywords_elem = soup.find(string=lambda text: text and keyword_label in text)
-                if keywords_elem:
-                    parent = keywords_elem.parent
-                    if parent:
-                        full_text = parent.get_text()
-                        keywords_text = full_text.replace(keyword_label, "").strip()
-                        break
-        
-        # Method 5: Look for meta keywords
-        if not keywords_text:
-            meta_keywords = soup.find("meta", {"name": "keywords"})
-            if meta_keywords and meta_keywords.get("content"):
-                keywords_text = meta_keywords.get("content").strip()
-        
-        # Clean and format keywords
-        if keywords_text:
-            # Remove extra whitespace and normalize
-            keywords_text = re.sub(r'\s+', ' ', keywords_text.strip())
-            # Remove leading/trailing dashes and clean up
-            keywords_text = re.sub(r'^[-–—\s]+|[-–—\s]+$', '', keywords_text)
-            # Only add if we have meaningful content
-            if len(keywords_text) > 2:
-                article_data["keywords"] = keywords_text
+        keywords = extract_keywords(soup)
+        if keywords:
+            article_data["keywords"] = keywords
 
-        # Extract category if available
-        category_elem = soup.find("span", {"itemprop": "about"})
-        if category_elem:
-            article_data["category"] = category_elem.get_text().strip()
+        category = extract_category(soup)
+        if category:
+            article_data["category"] = category
 
         return (
             article_data
@@ -564,7 +411,7 @@ def process_article_id(
             print(f"✗ ID {article_id}: Already processed (duplicate)")
             return None
         PROCESSED_IDS.add(article_id)
-    
+
     article_data = fetch_article_by_id(article_id)
     if article_data:
 
@@ -578,12 +425,11 @@ def process_article_id(
         keywords_info = ""
         if article_data.get("keywords"):
             keywords_info = f" [Keywords: {article_data['keywords'][:30]}...]"
-        
+
         print(f"✓ ID {article_id}: {article_data['title'][:50]}...{keywords_info}")
         return article_data
-    else:
-        print(f"✗ ID {article_id}: Not found")
-        return None
+    print(f"✗ ID {article_id}: Not found")
+    return None
 
 
 def scan_id_range_parallel_batch(
@@ -621,7 +467,7 @@ def scan_id_range_parallel_batch(
 
     # Initialize file if needed
     if output_dir and filename:
-        with open(os.path.join(output_dir, filename), "w", encoding="utf-8") as f:
+        with Path(str(Path(output_dir) / filename)).open("w", encoding="utf-8") as f:
             f.write("")  # Create empty file
 
     # Iterate in chunks to allow progressive saving and Tor renewal
@@ -732,7 +578,7 @@ def scan_id_range_parallel(
 
     # Initialize file if needed
     if output_dir and filename:
-        with open(os.path.join(output_dir, filename), "w", encoding="utf-8") as f:
+        with Path(str(Path(output_dir) / filename)).open("w", encoding="utf-8") as f:
             f.write("")  # Create empty file
 
     # Process IDs in parallel
@@ -811,18 +657,6 @@ def scan_id_range(min_id, max_id, step=1, output_dir=None, filename=None):
         f"{min_id}-{max_id}"
     )
     return found_articles
-
-
-def extract_protext_id(url):
-    """Extract ID number from Protext.cz URL."""
-    if not url or "protext.cz" not in url:
-        return None
-
-    # Pattern: https://www.protext.cz/zprava.php?id=53986
-    match = re.search(r"id=(\d+)", url)
-    if match:
-        return int(match.group(1))
-    return None
 
 
 def fetch_full_content(url):
@@ -926,51 +760,35 @@ def fetch_latest_rss_articles():
         print(f"ID range: {min_id} - {max_id}")
         print(f"Newest article ID: {max_id}")
         return max_id, min_id
-    else:
-        print("No articles found in RSS feed, using fallback")
-        return None, None
+    print("No articles found in RSS feed, using fallback")
+    return None, None
 
 
 def analyze_categories_from_json(json_file_path):
-    """Analyze categories from scraped JSON data and return category statistics."""
-    try:
-        with open(json_file_path, "r", encoding="utf-8") as f:
-            articles = json.load(f)
-
-        categories = {}
-        total_articles = len(articles)
-
-        for article in articles:
-            category = article.get("category", "Uncategorized")
-            if category in categories:
-                categories[category] += 1
-            else:
-                categories[category] = 1
-
-        # Sort categories by count (descending)
-        sorted_categories = sorted(categories.items(), key=lambda x: x[1], reverse=True)
-
-        print("\nCATEGORY ANALYSIS")
-        print(f"Total articles: {total_articles}")
-        print(f"Number of categories: {len(categories)}")
-        print("\nCategories (article count):")
-
-        for category, count in sorted_categories:
-            percentage = (count / total_articles) * 100
-            print(f"  {category}: {count} ({percentage:.1f}%)")
-
-        return categories, sorted_categories
-
-    except Exception as e:
-        print(f"Error analyzing categories: {e}")
+    """Print a breakdown of the categories in a results file."""
+    articles = load_articles(json_file_path)
+    if not articles:
+        print(f"No articles to analyze in {json_file_path}")
         return {}, []
+
+    categories = count_categories(articles)
+    sorted_categories = sorted(categories.items(), key=lambda pair: pair[1], reverse=True)
+
+    print("\nCATEGORY ANALYSIS")
+    print(f"Total articles: {len(articles)}")
+    print(f"Number of categories: {len(categories)}")
+    print("\nCategories (article count):")
+    for category, count in sorted_categories:
+        print(f"  {category}: {count} ({count / len(articles) * 100:.1f}%)")
+
+    return categories, sorted_categories
 
 
 def save_categories_to_json(categories, output_dir):
     """Save categories analysis to JSON file."""
     try:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        categories_file = os.path.join(output_dir, f"categories_{timestamp}.json")
+        categories_file = str(Path(output_dir) / f"categories_{timestamp}.json")
 
         categories_data = {
             "analysis_date": datetime.now().isoformat(),
@@ -978,39 +796,25 @@ def save_categories_to_json(categories, output_dir):
             "categories": categories,
         }
 
-        with open(categories_file, "w", encoding="utf-8") as f:
+        with Path(categories_file).open("w", encoding="utf-8") as f:
             json.dump(categories_data, f, ensure_ascii=False, indent=2)
 
         print(f"Categories saved to: {categories_file}")
-        return categories_file
+        return categories_file  # noqa: TRY300 - reads with the line above it
 
     except Exception as e:
         print(f"Error saving categories: {e}")
         return None
 
 
-def filter_articles_by_categories(articles, selected_categories):
-    """Filter articles by selected categories."""
-    if not selected_categories:
-        return articles
-
-    filtered_articles = []
-    for article in articles:
-        article_category = article.get("category", "Uncategorized")
-        if article_category in selected_categories:
-            filtered_articles.append(article)
-
-    return filtered_articles
-
-
 def get_categories_from_file():
     """Try to load categories from existing JSON file."""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    categories_file = os.path.join(script_dir, "data", "categories.json")
+    script_dir = str(Path(__file__).resolve().parent)
+    categories_file = str(Path(script_dir) / "data" / "categories.json")
 
-    if os.path.exists(categories_file):
+    if Path(categories_file).exists():
         try:
-            with open(categories_file, "r", encoding="utf-8") as f:
+            with Path(categories_file).open(encoding="utf-8") as f:
                 categories_list = json.load(f)
 
             # Convert list to sorted tuples format (count = 0 since we don't have stats)
@@ -1018,10 +822,10 @@ def get_categories_from_file():
 
             print(f"\nCategories loaded from file: {categories_file}")
             print(f"Available categories ({len(categories_list)}):")
-            for i, (category, count) in enumerate(sorted_categories, 1):
+            for i, (category, _count) in enumerate(sorted_categories, 1):
                 print(f"{i}. {category}")
 
-            return sorted_categories
+            return sorted_categories  # noqa: TRY300 - reads with the line above it
         except Exception as e:
             print(f"Error loading categories from file: {e}")
 
@@ -1099,12 +903,10 @@ def select_categories_at_start(sorted_categories):
             if selected_categories:
                 print(f"\nSelected categories: {', '.join(selected_categories)}")
                 return selected_categories
-            else:
-                print("Invalid category numbers")
-                return None
-        else:
-            print("No categories selected - all will be scraped")
+            print("Invalid category numbers")
             return None
+        print("No categories selected - all will be scraped")
+        return None  # noqa: TRY300 - reads with the line above it
 
     except ValueError:
         print("Invalid number format")
@@ -1182,11 +984,11 @@ def main():
     """Main function to scrape Protext.cz articles directly via ID scanning with Tor."""
 
     # Load and display ASCII art
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    ascii_file = os.path.join(script_dir, "data", "ascii.txt")
+    script_dir = str(Path(__file__).resolve().parent)
+    ascii_file = str(Path(script_dir) / "data" / "ascii.txt")
     try:
-        if os.path.exists(ascii_file):
-            with open(ascii_file, "r", encoding="utf-8") as f:
+        if Path(ascii_file).exists():
+            with Path(ascii_file).open(encoding="utf-8") as f:
                 ascii_art = f.read()
                 print(ascii_art)
                 print()
@@ -1246,16 +1048,14 @@ def main():
     print()
 
     # Create output directory and filename
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    output_dir = os.path.join(script_dir, "output")
-    os.makedirs(output_dir, exist_ok=True)
+    script_dir = str(Path(__file__).resolve().parent)
+    output_dir = str(Path(script_dir) / "output")
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     # Clean old reports
-    for old_file_path in glob.glob(os.path.join(output_dir, "content_*.json")):
-        try:
-            os.remove(old_file_path)
-        except OSError:
-            pass
+    for old_file_path in Path(output_dir).glob("content_*.json"):
+        with contextlib.suppress(OSError):
+            old_file_path.unlink()
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"content_{timestamp}.json"
@@ -1485,7 +1285,7 @@ def main():
             if all_articles:
                 # Analyze categories
                 categories, sorted_categories = analyze_categories_from_json(
-                    os.path.join(output_dir, filename)
+                    str(Path(output_dir) / filename)
                 )
 
                 if categories:
@@ -1567,7 +1367,7 @@ def main():
         print(f"Location: {output_dir}")
         try:
             file_size = (
-                os.path.getsize(os.path.join(output_dir, filename)) / 1024 / 1024
+                Path(str(Path(output_dir) / filename)).stat().st_size / 1024 / 1024
             )
             print(f"File size: {file_size:.1f} MB")
         except OSError:
