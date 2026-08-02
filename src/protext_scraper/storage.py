@@ -1,3 +1,17 @@
+#
+# Project: protext-scraper
+# File:    storage.py
+#
+# Description:
+# Reads and writes the scraped articles on disk and drops repeats by article ID.
+#
+# Author:
+# Jan Alexandr Kopřiva
+# jan.alexandr.kopriva@gmail.com
+#
+# License: MIT
+#
+
 """Writing scraped articles to disk.
 
 Workers append to one file, so every write goes through a lock and every

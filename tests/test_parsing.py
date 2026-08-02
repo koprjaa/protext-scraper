@@ -1,3 +1,17 @@
+#
+# Project: protext-scraper
+# File:    test_parsing.py
+#
+# Description:
+# Tests for turning a Protext.cz page into fields.
+#
+# Author:
+# Jan Alexandr Kopřiva
+# jan.alexandr.kopriva@gmail.com
+#
+# License: MIT
+#
+
 """Tests for turning a Protext.cz page into fields. No Tor, no network."""
 
 import pytest

@@ -1,3 +1,17 @@
+#
+# Project: protext-scraper
+# File:    test_storage.py
+#
+# Description:
+# Tests for reading and writing the scraped articles and for dropping repeats.
+#
+# Author:
+# Jan Alexandr Kopřiva
+# jan.alexandr.kopriva@gmail.com
+#
+# License: MIT
+#
+
 """Tests for writing scraped articles to disk."""
 
 import json

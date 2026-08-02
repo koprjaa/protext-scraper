@@ -1,3 +1,17 @@
+#
+# Project: protext-scraper
+# File:    parsing.py
+#
+# Description:
+# Turns a Protext.cz article page into its content, keywords, category, and ID.
+#
+# Author:
+# Jan Alexandr Kopřiva
+# jan.alexandr.kopriva@gmail.com
+#
+# License: MIT
+#
+
 """Turning a Protext.cz page into fields.
 
 Kept apart from the fetching so it can be tested without Tor and without the

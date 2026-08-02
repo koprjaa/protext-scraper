@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""
-Project: Protext Scraper
-File: main.py
-Description: Extracts full content from PR and press release RSS feeds and saves them to a single text file.
-Author: Jan Alexandr Kopřiva jan.alexandr.kopriva@gmail.com
-License: MIT
-"""
+#
+# Project: protext-scraper
+# File:    main.py
+#
+# Description:
+# Command line scraper: walks Protext.cz article IDs over Tor and saves the articles it finds.
+#
+# Author:
+# Jan Alexandr Kopřiva
+# jan.alexandr.kopriva@gmail.com
+#
+# License: MIT
+#
 
 import contextlib
 import json
