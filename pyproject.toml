@@ -17,7 +17,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
 ]
-dependencies = ["requests[socks]>=2.32", "beautifulsoup4>=4.12", "chardet>=5.0", "stem>=1.8"]
+dependencies = ["requests[socks]>=2.33.0", "beautifulsoup4>=4.12", "chardet>=5.0", "stem>=1.8"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff==0.16.1"]
