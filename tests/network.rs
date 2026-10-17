@@ -2,7 +2,6 @@
 // File: tests/network.rs
 // Description: Offline HTTP, retry, encoding, and Tor protocol tests.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 mod support;
 use protext_scraper::network::*;

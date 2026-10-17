@@ -2,7 +2,6 @@
 // File: tests/parsing.rs
 // Description: Equivalents of every original parser test and parser regressions.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 use protext_scraper::parsing::*;
 use scraper::Html;

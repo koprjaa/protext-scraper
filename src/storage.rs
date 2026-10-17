@@ -2,7 +2,6 @@
 // File: storage.rs
 // Description: Locked JSON persistence and category utilities.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 
 use serde_json::{Map, Value};

@@ -2,7 +2,6 @@
 // File: tests/workflow.rs
 // Description: Offline interactive workflows and scanner regressions.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 mod support;
 use protext_scraper::{app::*, scanning::*, storage::*};

@@ -2,7 +2,6 @@
 // File: scanning.rs
 // Description: Bounded workers, completion ordering, and progressive saves.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 
 use crate::{

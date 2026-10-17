@@ -2,7 +2,6 @@
 // File: parsing.rs
 // Description: Extract fields from Protext article pages.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 
 use regex::Regex;

@@ -2,7 +2,6 @@
 // File: network.rs
 // Description: HTTP retries, encoding detection, and Tor control.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 
 use crate::parsing::{full_content, parse_article, rss_ids};

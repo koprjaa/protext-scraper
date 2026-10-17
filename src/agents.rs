@@ -2,7 +2,6 @@
 // File: agents.rs
 // Description: Original browser User-Agent pool.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 
 pub const USER_AGENTS: &[&str] = &[

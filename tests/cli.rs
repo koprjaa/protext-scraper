@@ -2,7 +2,6 @@
 // File: tests/cli.rs
 // Description: Exercise the installed-style executable against a local SOCKS stub.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 use std::{
     io::{Read, Write},

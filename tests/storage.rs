@@ -2,7 +2,6 @@
 // File: tests/storage.rs
 // Description: Equivalents of every original storage test and concurrent-write checks.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 use protext_scraper::storage::*;
 use serde_json::{json, Value};

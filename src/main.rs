@@ -2,7 +2,6 @@
 // File: main.rs
 // Description: Interactive executable entry point.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 
 use protext_scraper::{app, network::Network};

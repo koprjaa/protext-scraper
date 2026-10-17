@@ -2,7 +2,6 @@
 // File: tests/support/mod.rs
 // Description: Deterministic offline transport for workflow tests.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 #![allow(dead_code)]
 use protext_scraper::network::{Network, Response, Transport};

@@ -2,7 +2,6 @@
 // File: app.rs
 // Description: Original interactive workflow and category reports.
 // Author: Jan Alexandr Kopřiva
-// Based on protext-scraper by Jan Alexandr Kopřiva
 // License: MIT
 
 use crate::{
