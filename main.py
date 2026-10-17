@@ -75,10 +75,8 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0",
     # Linux Chrome
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/119.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
     # Linux Firefox
     "Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0",
     "Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0",
@@ -125,7 +123,6 @@ def check_tor_connection():
 def start_tor_service():
     """Start Tor service if not running."""
     try:
-
         if check_tor_connection():
             return True
 
@@ -133,9 +130,7 @@ def start_tor_service():
 
         # Try to start Tor (macOS with Homebrew)
         try:
-            subprocess.run(
-                ["brew", "services", "start", "tor"], check=True, capture_output=True
-            )
+            subprocess.run(["brew", "services", "start", "tor"], check=True, capture_output=True)
             time.sleep(5)  # Wait for Tor to start
         except subprocess.CalledProcessError:
             # Try system Tor
@@ -233,8 +228,7 @@ def make_request_with_retry(url, max_retries=3, base_delay=1, use_tor=True):
                 "Sec-Fetch-User": "?1",
                 "Cache-Control": "max-age=0",
                 "DNT": "1",
-                "Sec-Ch-Ua": '"Not_A Brand";v="8", "Chromium";v="120", '
-                '"Google Chrome";v="120"',
+                "Sec-Ch-Ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
                 "Sec-Ch-Ua-Mobile": "?0",
                 "Sec-Ch-Ua-Platform": '"Windows"',
             }
@@ -283,10 +277,7 @@ def make_request_with_retry(url, max_retries=3, base_delay=1, use_tor=True):
                 # Exponential backoff + jitter
 
                 delay = base_delay * (2**attempt) + random.uniform(2, 8)
-                print(
-                    f"Request failed (attempt {attempt + 1}/{max_retries}): "
-                    f"{str(e)[:80]}..."
-                )
+                print(f"Request failed (attempt {attempt + 1}/{max_retries}): {str(e)[:80]}...")
                 print(f"Retrying in {delay:.1f} seconds...")
 
                 # Only renew Tor circuit on persistent failures (not on first retry)
@@ -327,18 +318,12 @@ def fetch_article_by_id(article_id):
         except UnicodeDecodeError:
             content = raw_content.decode("utf-8", errors="ignore")
 
-
         soup = BeautifulSoup(content, "html.parser")
-
 
         article_data = {}
 
         # Extract title - specific for Protext.cz structure
-        title_elem = (
-            soup.find("h1", {"itemprop": "name headline"})
-            or soup.find("h1")
-            or soup.find("title")
-        )
+        title_elem = soup.find("h1", {"itemprop": "name headline"}) or soup.find("h1") or soup.find("title")
         if title_elem:
             article_data["title"] = clean_content(title_elem.get_text())
 
@@ -351,9 +336,7 @@ def fetch_article_by_id(article_id):
 
         # Extract date - specific for Protext.cz structure
         date_elem = (
-            soup.find("p", {"itemprop": "datePublished"})
-            or soup.find("time")
-            or soup.find(class_="date")
+            soup.find("p", {"itemprop": "datePublished"}) or soup.find("time") or soup.find(class_="date")
         )
         if date_elem:
             article_data["date"] = date_elem.get_text().strip()
@@ -366,20 +349,14 @@ def fetch_article_by_id(article_id):
         if category:
             article_data["category"] = category
 
-        return (
-            article_data
-            if article_data.get("title") and article_data.get("content")
-            else None
-        )
+        return article_data if article_data.get("title") and article_data.get("content") else None
 
     except Exception as e:
         print(f"Error fetching article {article_id}: {e}")
         return None
 
 
-def process_article_id(
-    article_id, output_dir=None, filename=None, selected_categories=None
-):
+def process_article_id(article_id, output_dir=None, filename=None, selected_categories=None):
     """Process single article ID (for parallel execution) with duplicate prevention."""
     # Fast-fail on duplicates before network request
 
@@ -391,13 +368,11 @@ def process_article_id(
 
     article_data = fetch_article_by_id(article_id)
     if article_data:
-
         if selected_categories:
             article_category = article_data.get("category", "Uncategorized")
             if article_category not in selected_categories:
                 print(f"✗ ID {article_id}: Category '{article_category}' not selected")
                 return None
-
 
         keywords_info = ""
         if article_data.get("keywords"):
@@ -432,10 +407,7 @@ def scan_id_range_parallel_batch(
     total_range = max_id - min_id + 1
     total_batches = (total_range + batch_size - 1) // batch_size
 
-    print(
-        f"Total range: {total_range} IDs, Processing in {total_batches} "
-        f"batches of {batch_size}"
-    )
+    print(f"Total range: {total_range} IDs, Processing in {total_batches} batches of {batch_size}")
     print(f"Saving every {save_frequency} articles")
 
     all_found_articles = []
@@ -501,10 +473,7 @@ def scan_id_range_parallel_batch(
 
         # Progressive saving - save every N articles
         current_count = len(all_found_articles)
-        if (
-            current_count >= save_frequency
-            and (current_count - last_save_count) >= save_frequency
-        ):
+        if current_count >= save_frequency and (current_count - last_save_count) >= save_frequency:
             print(f"Saving {current_count} articles to disk...")
             save_articles_progressively(all_found_articles, output_dir, filename)
             last_save_count = current_count
@@ -527,8 +496,7 @@ def scan_id_range_parallel_batch(
         save_articles_progressively(all_found_articles, output_dir, filename)
 
     print(
-        f"\nBatch parallel scan complete: Found {len(all_found_articles)} "
-        f"articles in range {min_id}-{max_id}"
+        f"\nBatch parallel scan complete: Found {len(all_found_articles)} articles in range {min_id}-{max_id}"
     )
     return all_found_articles
 
@@ -543,11 +511,7 @@ def scan_id_range_parallel(
     selected_categories=None,
 ):
     """Scan a range of IDs using parallel workers for much faster processing."""
-    print(
-        f"\nParallel scanning ID range: {min_id} - {max_id} "
-        f"(step: {step}, workers: {max_workers})"
-    )
-
+    print(f"\nParallel scanning ID range: {min_id} - {max_id} (step: {step}, workers: {max_workers})")
 
     id_list = list(range(min_id, max_id + 1, step))
     found_articles = []
@@ -590,10 +554,7 @@ def scan_id_range_parallel(
             except Exception as e:
                 print(f"Error processing ID {article_id}: {e}")
 
-    print(
-        f"\nParallel scan complete: Found {len(found_articles)} "
-        f"articles in range {min_id}-{max_id}"
-    )
+    print(f"\nParallel scan complete: Found {len(found_articles)} articles in range {min_id}-{max_id}")
     return found_articles
 
 
@@ -629,10 +590,7 @@ def scan_id_range(min_id, max_id, step=1, output_dir=None, filename=None):
     if output_dir and filename and found_articles:
         save_articles_progressively(found_articles, output_dir, filename)
 
-    print(
-        f"\nScan complete: Found {len(found_articles)} articles in range "
-        f"{min_id}-{max_id}"
-    )
+    print(f"\nScan complete: Found {len(found_articles)} articles in range {min_id}-{max_id}")
     return found_articles
 
 
@@ -705,16 +663,13 @@ def fetch_latest_rss_articles():
     """Fetch latest articles from RSS feeds to find the newest ID."""
     print("Fetching latest articles from RSS feeds to find newest ID...")
 
-
     # RSS is faster/lighter than parsing the main page
     main_feed = "https://www.protext.cz/rss/cz.php"
     all_ids = []
 
     try:
         print(f"Checking {main_feed}...")
-        response = make_request_with_retry(
-            main_feed, use_tor=True, max_retries=2, base_delay=0.5
-        )
+        response = make_request_with_retry(main_feed, use_tor=True, max_retries=2, base_delay=0.5)
         if response and response.status_code == 200:
             # Parse RSS content
             root = ET.fromstring(response.text)
@@ -811,9 +766,7 @@ def get_categories_from_file():
 
 def get_categories_from_sample(latest_id, sample_size=50):
     """Get available categories by scraping a small sample of articles."""
-    print(
-        f"\nRetrieving available categories from a sample of {sample_size} articles..."
-    )
+    print(f"\nRetrieving available categories from a sample of {sample_size} articles...")
 
     # Scrape a small sample to get categories
     sample_min = max(1, latest_id - sample_size + 1)
@@ -872,9 +825,7 @@ def select_categories_at_start(sorted_categories):
         if choice:
             indices = [int(x.strip()) - 1 for x in choice.split(",")]
             selected_categories = [
-                sorted_categories[i][0]
-                for i in indices
-                if 0 <= i < len(sorted_categories)
+                sorted_categories[i][0] for i in indices if 0 <= i < len(sorted_categories)
             ]
 
             if selected_categories:
@@ -918,35 +869,22 @@ def offer_category_filtering(articles, output_dir):
             print(f"{i}. {category}: {count} articles ({percentage:.1f}%)")
 
         try:
-            selected_indices = input(
-                "\nEnter category numbers separated by commas (e.g., 1,3,5): "
-            ).strip()
+            selected_indices = input("\nEnter category numbers separated by commas (e.g., 1,3,5): ").strip()
             if selected_indices:
                 indices = [int(x.strip()) - 1 for x in selected_indices.split(",")]
                 selected_categories = [
-                    sorted_categories[i][0]
-                    for i in indices
-                    if 0 <= i < len(sorted_categories)
+                    sorted_categories[i][0] for i in indices if 0 <= i < len(sorted_categories)
                 ]
 
                 if selected_categories:
-                    print(
-                        f"\nFiltering by categories: {', '.join(selected_categories)}"
-                    )
-                    filtered_articles = filter_articles_by_categories(
-                        articles, selected_categories
-                    )
+                    print(f"\nFiltering by categories: {', '.join(selected_categories)}")
+                    filtered_articles = filter_articles_by_categories(articles, selected_categories)
 
                     # Save filtered results
                     filtered_filename = f"filtered_content_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-                    save_articles_progressively(
-                        filtered_articles, output_dir, filtered_filename
-                    )
+                    save_articles_progressively(filtered_articles, output_dir, filtered_filename)
 
-                    print(
-                        f"Filtered {len(filtered_articles)} articles out of "
-                        f"{len(articles)}"
-                    )
+                    print(f"Filtered {len(filtered_articles)} articles out of {len(articles)}")
                     print(f"Filtered results saved to: {filtered_filename}")
 
                     # Also save categories analysis
@@ -1000,9 +938,7 @@ def main():
     # Get categories and let user select which ones to scrape
     print("CATEGORY SELECTION:")
     print("Do you want to select specific categories for scraping?")
-    category_choice = (
-        input("Enter 'y' to select categories or Enter for all: ").strip().lower()
-    )
+    category_choice = input("Enter 'y' to select categories or Enter for all: ").strip().lower()
 
     selected_categories = None
     if category_choice == "y":
@@ -1043,20 +979,11 @@ def main():
 
     # Menu
     print("🥷 TOR SCRAPING MODE:")
-    print(f"1. TEST - range {latest_id-99}-{latest_id} (quick test)")
-    print(f"2. SMALL - range {latest_id-999}-{latest_id} (estimate: ~500-800 articles)")
-    print(
-        f"3. MEDIUM - range {latest_id-9999}-{latest_id} "
-        f"(estimate: ~5000-8000 articles)"
-    )
-    print(
-        f"4. LARGE - range {latest_id-49999}-{latest_id} "
-        f"(estimate: ~25000-40000 articles)"
-    )
-    print(
-        f"5. MASSIVE - range {latest_id-99999}-{latest_id} "
-        f"(estimate: ~50000-80000 articles)"
-    )
+    print(f"1. TEST - range {latest_id - 99}-{latest_id} (quick test)")
+    print(f"2. SMALL - range {latest_id - 999}-{latest_id} (estimate: ~500-800 articles)")
+    print(f"3. MEDIUM - range {latest_id - 9999}-{latest_id} (estimate: ~5000-8000 articles)")
+    print(f"4. LARGE - range {latest_id - 49999}-{latest_id} (estimate: ~25000-40000 articles)")
+    print(f"5. MASSIVE - range {latest_id - 99999}-{latest_id} (estimate: ~50000-80000 articles)")
     # For MAXIMUM, use ID 1 as minimum since RSS feed only contains ~50 articles
     maximum_min_id = 1
     print(
@@ -1082,18 +1009,12 @@ def main():
         # For category analysis (option 8), skip direction and save frequency questions
         if choice != "8":
             # Ask for direction
-            direction_choice = (
-                input("Enter direction (A/B) [A = NEWEST→OLDEST]: ").strip().upper()
-            )
+            direction_choice = input("Enter direction (A/B) [A = NEWEST→OLDEST]: ").strip().upper()
             reverse = direction_choice != "B"  # Default to NEWEST→OLDEST
 
             # Ask for save frequency
-            save_choice = input(
-                "Enter save frequency (1/2/3/4) [3 = every 100]: "
-            ).strip()
-            save_frequency = {"1": 25, "2": 50, "3": 100, "4": 200}.get(
-                save_choice, 100
-            )  # Default to 100
+            save_choice = input("Enter save frequency (1/2/3/4) [3 = every 100]: ").strip()
+            save_frequency = {"1": 25, "2": 50, "3": 100, "4": 200}.get(save_choice, 100)  # Default to 100
         else:
             # Default values for category analysis
             reverse = True
@@ -1108,7 +1029,7 @@ def main():
                 test_min,
                 latest_id,
                 max_workers=10,  # Reduced from 20
-                batch_size=50,   # Reduced from 100
+                batch_size=50,  # Reduced from 100
                 output_dir=output_dir,
                 filename=filename,
                 reverse=reverse,
@@ -1216,12 +1137,8 @@ def main():
             try:
                 min_id = int(input("Enter minimum ID: "))
                 max_id = int(input("Enter maximum ID: "))
-                workers = int(
-                    input("Enter number of workers (recommended 50): ") or "50"
-                )
-                batch_size = int(
-                    input("Enter batch size (recommended 1000): ") or "1000"
-                )
+                workers = int(input("Enter number of workers (recommended 50): ") or "50")
+                batch_size = int(input("Enter batch size (recommended 1000): ") or "1000")
 
                 print(f"CUSTOM DATASET: {min_id}-{max_id}")
                 confirm = input("Continue? (y/N): ").strip().lower()
@@ -1261,9 +1178,7 @@ def main():
 
             if all_articles:
                 # Analyze categories
-                categories, sorted_categories = analyze_categories_from_json(
-                    str(Path(output_dir) / filename)
-                )
+                categories, sorted_categories = analyze_categories_from_json(str(Path(output_dir) / filename))
 
                 if categories:
                     # Save categories to JSON
@@ -1271,11 +1186,7 @@ def main():
 
                     # Ask if user wants to filter by categories
                     print("\nDO YOU WANT TO FILTER BY CATEGORIES?")
-                    filter_choice = (
-                        input("Enter 'y' to filter or Enter to continue: ")
-                        .strip()
-                        .lower()
-                    )
+                    filter_choice = input("Enter 'y' to filter or Enter to continue: ").strip().lower()
 
                     if filter_choice == "y":
                         print("\nAvailable categories:")
@@ -1287,10 +1198,7 @@ def main():
                                 "\nEnter category numbers separated by commas (e.g., 1,3,5): "
                             ).strip()
                             if selected_indices:
-                                indices = [
-                                    int(x.strip()) - 1
-                                    for x in selected_indices.split(",")
-                                ]
+                                indices = [int(x.strip()) - 1 for x in selected_indices.split(",")]
                                 selected_categories = [
                                     sorted_categories[i][0]
                                     for i in indices
@@ -1298,11 +1206,10 @@ def main():
                                 ]
 
                                 if selected_categories:
-                                    print(
-                                        f"\nFiltering by categories: "
-                                        f"{', '.join(selected_categories)}"
+                                    print(f"\nFiltering by categories: {', '.join(selected_categories)}")
+                                    filtered_filename = (
+                                        f"filtered_content_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
                                     )
-                                    filtered_filename = f"filtered_content_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
                                     filtered_articles = filter_articles_by_categories(
                                         all_articles, selected_categories
                                     )
@@ -1316,9 +1223,7 @@ def main():
                                         f"Filtered {len(filtered_articles)} articles "
                                         f"out of {len(all_articles)}"
                                     )
-                                    print(
-                                        f"Filtered results saved to: {filtered_filename}"
-                                    )
+                                    print(f"Filtered results saved to: {filtered_filename}")
                                 else:
                                     print("Invalid category numbers")
                         except ValueError:
@@ -1343,9 +1248,7 @@ def main():
         print(f"Saved to: {filename}")
         print(f"Location: {output_dir}")
         try:
-            file_size = (
-                Path(str(Path(output_dir) / filename)).stat().st_size / 1024 / 1024
-            )
+            file_size = Path(str(Path(output_dir) / filename)).stat().st_size / 1024 / 1024
             print(f"File size: {file_size:.1f} MB")
         except OSError:
             print("File size: Calculating...")

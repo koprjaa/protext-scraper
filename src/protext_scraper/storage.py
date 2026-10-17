@@ -39,9 +39,7 @@ def load_articles(file_path) -> list:
 
 
 def write_articles(file_path, articles) -> None:
-    Path(file_path).write_text(
-        json.dumps(articles, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    Path(file_path).write_text(json.dumps(articles, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def deduplicate(articles: list) -> tuple[list, int]:
