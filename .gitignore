@@ -1,31 +1,26 @@
-# Output files
+# Build products
+/target/
+
+# Scraped output
+/output/
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
 output/
 output/*.json
-
-# Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
-
-# Virtual environment
 venv/
 env/
 ENV/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-
-# Tooling caches
 .pytest_cache/
 .ruff_cache/
 uv.lock
