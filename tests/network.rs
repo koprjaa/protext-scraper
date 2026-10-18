@@ -195,3 +195,38 @@ fn startup_check_status_and_bad_json() {
     *m.body.lock().unwrap() = Some(b"broken".to_vec());
     assert!(!n.check_tor_connection());
 }
+
+#[test]
+fn huge_retry_after_is_bounded_and_timeout_values_do_not_panic() {
+    let (n, m) = support::network();
+    *m.statuses.lock().unwrap() = [Ok(429), Ok(200)].into();
+    *m.retry_after.lock().unwrap() = Some(u64::MAX.to_string());
+    assert!(n.request("http://fixture.test", 2, 1.0, false).is_some());
+    assert_eq!(m.sleeps.lock().unwrap()[1], 86_400.0);
+    for timeout in [f64::NAN, f64::INFINITY, -1.0, f64::MAX] {
+        assert!(HttpTransport
+            .get("http://127.0.0.1:1", &browser_headers(), timeout, false)
+            .is_err());
+    }
+}
+#[test]
+fn actual_transport_timeout_and_connection_failure() {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let address = listener.local_addr().unwrap();
+    let server = thread::spawn(move || {
+        let (_s, _) = listener.accept().unwrap();
+        thread::sleep(std::time::Duration::from_millis(200));
+    });
+    assert!(HttpTransport
+        .get(
+            &format!("http://{address}"),
+            &browser_headers(),
+            0.04,
+            false
+        )
+        .is_err());
+    server.join().unwrap();
+    assert!(HttpTransport
+        .get(&format!("http://{address}"), &browser_headers(), 0.1, false)
+        .is_err());
+}

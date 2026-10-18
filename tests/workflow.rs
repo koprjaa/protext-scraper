@@ -237,3 +237,85 @@ fn invalid_filter_selection_does_not_write_reports() {
     offer_category_filtering(&mut Cursor::new("y\ninvalid\n"), &articles, d.path()).unwrap();
     assert_eq!(std::fs::read_dir(d.path()).unwrap().count(), 0);
 }
+
+#[test]
+fn extreme_ranges_and_resource_sizes_do_not_panic() {
+    let (n, _) = support::network();
+    for id in [i64::MIN, i64::MAX] {
+        for reverse in [false, true] {
+            let mut o = ScanOptions::new(id, id);
+            o.reverse = reverse;
+            o.workers = 1;
+            o.step = usize::MAX;
+            let rows = scan_id_range_parallel_batch(&n, &o).unwrap();
+            assert_eq!(rows[0]["id"], id);
+        }
+    }
+    for (min, max, workers, batch) in [
+        (i64::MIN, i64::MAX, 1, 500),
+        (1, 1, usize::MAX, 500),
+        (1, 1, 1, usize::MAX),
+    ] {
+        let mut o = ScanOptions::new(min, max);
+        o.workers = workers;
+        o.batch_size = batch;
+        assert_eq!(
+            scan_id_range_parallel_batch(&n, &o).unwrap_err().kind(),
+            std::io::ErrorKind::InvalidInput
+        );
+    }
+}
+#[test]
+fn python_whitespace_in_input_and_selection() {
+    assert_eq!(
+        input(&mut Cursor::new("\u{1c}all\u{1f}\r\n"), "").unwrap(),
+        "all"
+    );
+    assert_eq!(
+        select_indices("\u{1c}1\u{1f}", &[("Sport".into(), 0)]).unwrap(),
+        ["Sport"]
+    );
+}
+#[test]
+#[cfg(unix)]
+fn service_commands_have_a_deadline_and_no_interactive_input() {
+    use std::time::{Duration, Instant};
+    let start = Instant::now();
+    assert!(!run_service_command(
+        "sh",
+        &["-c", "while :; do :; done"],
+        Duration::from_millis(60)
+    ));
+    assert!(start.elapsed() < Duration::from_secs(3));
+    assert!(run_service_command(
+        "sh",
+        &["-c", "exit 0"],
+        Duration::from_secs(1)
+    ));
+    assert!(!run_service_command(
+        "sh",
+        &["-c", "read answer"],
+        Duration::from_secs(1)
+    ));
+}
+#[test]
+fn python_integer_syntax_for_custom_scans() {
+    let (n, m) = support::network();
+    let d = tempfile::tempdir().unwrap();
+    run(
+        &n,
+        &mut Cursor::new("\n7\nB\n1\n+١\n３\n0_1\n+2\ny\n"),
+        d.path(),
+    )
+    .unwrap();
+    let requests = m.requests.lock().unwrap();
+    let ids = requests
+        .iter()
+        .filter(|r| r.0.contains("/show/"))
+        .map(|r| r.0.rsplit('/').next().unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(ids, ["1", "2", "3"]);
+    for s in ["1__0", "_1", "1_", "+_1"] {
+        assert!(protext_scraper::parsing::parse_integer::<i64>(s).is_err());
+    }
+}

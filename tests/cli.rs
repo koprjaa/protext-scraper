@@ -75,12 +75,28 @@ fn unavailable_tor_exits_zero_and_ignores_arguments() {
         .output()
         .unwrap();
     server.join().unwrap();
-    assert_eq!(result.status.code(), Some(0));
+    let reference: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/cli_reference.json")).unwrap();
+    assert_eq!(
+        result.status.code().map(i64::from),
+        reference["exit_code"].as_i64()
+    );
     let stdout = String::from_utf8(result.stdout).unwrap();
     assert!(stdout.starts_with("LOCAL ART\n\n"));
     assert!(stdout.contains("Checking Tor connection..."));
     assert!(stdout.contains("Starting Tor service..."));
     assert!(stdout.contains("Tor is not available. Please install Tor:"));
-    assert!(result.stderr.is_empty());
+    assert_eq!(
+        String::from_utf8(result.stderr).unwrap(),
+        reference["stderr"].as_str().unwrap()
+    );
+    for message in [
+        "Checking Tor connection...",
+        "Attempting to start Tor service...",
+        "Tor is not available. Please install Tor:",
+    ] {
+        assert!(stdout.contains(message));
+        assert!(reference["stdout"].as_str().unwrap().contains(message));
+    }
     assert!(!dir.path().join("output").exists());
 }

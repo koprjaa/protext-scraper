@@ -4,7 +4,7 @@
 // Author: Jan Alexandr Kopřiva
 // License: MIT
 
-use crate::parsing::{full_content, parse_article, rss_ids};
+use crate::parsing::{full_content, parse_article, parse_integer, rss_ids};
 use rand::Rng;
 use reqwest::{blocking::Client, header::HeaderMap, Proxy};
 use serde_json::Value;
@@ -33,7 +33,9 @@ pub trait Transport: Send + Sync {
         tor: bool,
     ) -> Result<Response, String>;
     fn sleep(&self, seconds: f64) {
-        thread::sleep(Duration::from_secs_f64(seconds.max(0.0)));
+        if let Ok(duration) = Duration::try_from_secs_f64(seconds) {
+            thread::sleep(duration);
+        }
     }
     fn random(&self, low: f64, high: f64) -> f64 {
         rand::thread_rng().gen_range(low..high)
@@ -53,7 +55,7 @@ impl Transport for HttpTransport {
     ) -> Result<Response, String> {
         let mut builder = Client::builder()
             .redirect(reqwest::redirect::Policy::limited(30))
-            .timeout(Duration::from_secs_f64(timeout))
+            .timeout(Duration::try_from_secs_f64(timeout).map_err(|e| e.to_string())?)
             .default_headers(headers.clone())
             .gzip(true)
             .brotli(true)
@@ -125,8 +127,9 @@ impl Network {
                             .headers
                             .get("retry-after")
                             .and_then(|v| v.to_str().ok())
-                            .and_then(|v| v.parse::<u64>().ok())
-                            .unwrap_or(180);
+                            .and_then(|v| parse_integer::<u64>(v).ok())
+                            .unwrap_or(180)
+                            .min(86_400);
                         println!("Rate limited (429). Waiting {delay} seconds...");
                         if tor {
                             println!("Renewing Tor circuit due to rate limit...");
@@ -250,8 +253,12 @@ impl Network {
     }
 }
 pub fn decode(bytes: &[u8]) -> String {
+    if let Some((encoding, skip)) = encoding_rs::Encoding::for_bom(bytes) {
+        let (text, _) = encoding.decode_without_bom_handling(&bytes[skip..]);
+        return text.into_owned();
+    }
     if let Ok(s) = std::str::from_utf8(bytes) {
-        return s.trim_start_matches('\u{feff}').into();
+        return s.into();
     }
     let mut detector = chardetng::EncodingDetector::new();
     detector.feed(bytes, true);

@@ -1,0 +1,6 @@
+{
+  "exit_code": 0,
+  "stdout": "\n▛▀▖▛▀▖▞▀▖▀▛▘▛▀▘▌ ▌▀▛▘ ▞▀▖▞▀▖▛▀▖▞▀▖▛▀▖▛▀▘▛▀▖\n▙▄▘▙▄▘▌ ▌ ▌ ▙▄ ▝▞  ▌  ▚▄ ▌  ▙▄▘▙▄▌▙▄▘▙▄ ▙▄▘\n▌  ▌▚ ▌ ▌ ▌ ▌  ▞▝▖ ▌  ▖ ▌▌ ▖▌▚ ▌ ▌▌  ▌  ▌▚ \n▘  ▘ ▘▝▀  ▘ ▀▀▘▘ ▘ ▘  ▝▀ ▝▀ ▘ ▘▘ ▘▘  ▀▀▘▘ ▘\n\n==================================================\nChecking Tor connection...\nTor connection failed: SOCKSHTTPSConnectionPool(host='httpbin.org', port=443): Max retries exceeded with url: /ip (Caused by NewConnectionError(\"SOCKSHTTPSConnection(host='httpbin.org', port=443): Failed to establish a new connection: 0x01: General SOCKS server failure\"))\nAttempting to start Tor service...\nTor connection failed: SOCKSHTTPSConnectionPool(host='httpbin.org', port=443): Max retries exceeded with url: /ip (Caused by NewConnectionError(\"SOCKSHTTPSConnection(host='httpbin.org', port=443): Failed to establish a new connection: 0x01: General SOCKS server failure\"))\nStarting Tor service...\nError starting Tor: [Errno 2] No such file or directory: 'brew'\nTor is not available. Please install Tor:\n   macOS: brew install tor && brew services start tor\n   Linux: sudo apt install tor && sudo systemctl start tor\n   Windows: Download Tor Browser\n",
+  "stderr": "",
+  "connections": 2
+}

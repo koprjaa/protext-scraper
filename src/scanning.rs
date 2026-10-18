@@ -10,7 +10,7 @@ use crate::{
 };
 use serde_json::Value;
 use std::{
-    collections::{HashSet, VecDeque},
+    collections::HashSet,
     io,
     path::{Path, PathBuf},
     sync::{mpsc, Mutex},
@@ -46,12 +46,15 @@ impl ScanOptions {
         if self.min > self.max
             || self.step == 0
             || self.workers == 0
+            || self.workers > 256
+            || self.batch_size > 1_000_000
+            || usize::try_from(i128::from(self.max) - i128::from(self.min) + 1).is_err()
             || self.batch_size == 0
             || self.save_frequency == 0
         {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
-                "Invalid scan range or nonpositive worker, batch, step, or save frequency",
+                "Invalid scan range or sizes (workers: 1..=256, batch: 1..=1000000; step and save frequency must be positive)",
             ));
         }
         Ok(())
@@ -95,21 +98,21 @@ pub fn process_article_id(
         None
     }
 }
-fn parallel(
+fn parallel<I: Iterator<Item = i64> + Send>(
     network: &Network,
-    ids: Vec<i64>,
+    ids: I,
     options: &ScanOptions,
     processed: &Mutex<HashSet<i64>>,
     progress: bool,
-) -> Vec<Value> {
-    let queue = Mutex::new(VecDeque::from(ids));
+) -> io::Result<Vec<Value>> {
+    let queue = Mutex::new(ids);
     let (tx, rx) = mpsc::channel();
     thread::scope(|scope| {
         for _ in 0..options.workers {
             let tx = tx.clone();
             let queue = &queue;
-            scope.spawn(move || loop {
-                let id = queue.lock().unwrap().pop_front();
+            thread::Builder::new().spawn_scoped(scope, move || loop {
+                let id = queue.lock().unwrap().next();
                 let Some(id) = id else {
                     break;
                 };
@@ -124,7 +127,7 @@ fn parallel(
                 {
                     break;
                 }
-            });
+            })?;
         }
         drop(tx);
         let mut articles = Vec::new();
@@ -136,7 +139,7 @@ fn parallel(
                 println!("Progress: {} articles found so far...", articles.len());
             }
         }
-        articles
+        Ok(articles)
     })
 }
 fn save(options: &ScanOptions, articles: &[Value]) -> io::Result<()> {
@@ -174,7 +177,7 @@ pub fn scan_id_range_parallel_batch(
     };
     println!("\nBatch parallel scanning ID range: {min} - {max} (step: {step}, workers: {workers}, batch: {batch_size})");
     println!("Direction: {direction}");
-    let total = (max - min + 1) as usize;
+    let total = (i128::from(max) - i128::from(min) + 1) as usize;
     let batches = total.div_ceil(batch_size);
     println!("Total range: {total} IDs, Processing in {batches} batches of {batch_size}");
     println!("Saving every {} articles", options.save_frequency);
@@ -184,14 +187,14 @@ pub fn scan_id_range_parallel_batch(
     let mut last_save = 0;
     for batch in 0..batches {
         let ids = if options.reverse {
-            let start = max - (batch * batch_size) as i64;
-            ((start - batch_size as i64 + 1).max(min)..=start)
+            let start = (i128::from(max) - (batch as i128 * batch_size as i128)) as i64;
+            ((i128::from(start) - batch_size as i128 + 1).max(min as i128) as i64..=start)
                 .rev()
                 .step_by(step)
                 .collect::<Vec<_>>()
         } else {
-            let start = min + (batch * batch_size) as i64;
-            (start..=(start + batch_size as i64 - 1).min(max))
+            let start = (i128::from(min) + (batch as i128 * batch_size as i128)) as i64;
+            (start..=(i128::from(start) + batch_size as i128 - 1).min(max as i128) as i64)
                 .step_by(step)
                 .collect::<Vec<_>>()
         };
@@ -201,7 +204,7 @@ pub fn scan_id_range_parallel_batch(
             ids[0],
             ids[ids.len() - 1]
         );
-        let found = parallel(network, ids, options, &processed, false);
+        let found = parallel(network, ids.into_iter(), options, &processed, false)?;
         let n = found.len();
         all.extend(found);
         println!(
@@ -243,11 +246,11 @@ pub fn scan_id_range_parallel(network: &Network, options: &ScanOptions) -> io::R
     initialize(options)?;
     let found = parallel(
         network,
-        (options.min..=options.max).step_by(options.step).collect(),
+        (options.min..=options.max).step_by(options.step),
         options,
         &Mutex::new(HashSet::new()),
         true,
-    );
+    )?;
     println!(
         "\nParallel scan complete: Found {} articles in range {}-{}",
         found.len(),

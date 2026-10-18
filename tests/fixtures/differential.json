@@ -1,0 +1,1987 @@
+[
+  {
+    "name": "clean ''",
+    "op": "clean",
+    "input": "",
+    "python": "",
+    "rust_before": ""
+  },
+  {
+    "name": "clean 'xxxxxxxxxxxxxxxxxxxx'",
+    "op": "clean",
+    "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "python": "",
+    "rust_before": ""
+  },
+  {
+    "name": "clean 'řřřřřřřřřřřřřřřřřřřř'",
+    "op": "clean",
+    "input": "řřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřř",
+    "python": "řřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřř",
+    "rust_before": "řřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřřř"
+  },
+  {
+    "name": "clean ' x\\r\\n x\\r\\n x\\r\\n x\\r\\n x\\r\\n'",
+    "op": "clean",
+    "input": " x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n x\r\n",
+    "python": "x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x",
+    "rust_before": "x x x x x x x x x x x x x x x x x x x x x x x x x x x x x x"
+  },
+  {
+    "name": "clean '<![CDATA[xxxxxxxxxxx'",
+    "op": "clean",
+    "input": "<![CDATA[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx]]>",
+    "python": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "rust_before": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+    "name": "clean '<p>xxxxxxxxxxxxxxxxx'",
+    "op": "clean",
+    "input": "<p>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</p>",
+    "python": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "rust_before": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+    "name": "whitespace '\\x1c'",
+    "op": "clean",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u001cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "python": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "rust_before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u001cbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+    "name": "keyword whitespace '\\x1c'",
+    "op": "keywords",
+    "input": "\u001c--abc—\u001c",
+    "python": "abc",
+    "rust_before": "\u001c--abc—\u001c"
+  },
+  {
+    "name": "whitespace '\\x1d'",
+    "op": "clean",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u001dbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "python": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "rust_before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u001dbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+    "name": "keyword whitespace '\\x1d'",
+    "op": "keywords",
+    "input": "\u001d--abc—\u001d",
+    "python": "abc",
+    "rust_before": "\u001d--abc—\u001d"
+  },
+  {
+    "name": "whitespace '\\x1e'",
+    "op": "clean",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u001ebbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "python": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "rust_before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u001ebbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+    "name": "keyword whitespace '\\x1e'",
+    "op": "keywords",
+    "input": "\u001e--abc—\u001e",
+    "python": "abc",
+    "rust_before": "\u001e--abc—\u001e"
+  },
+  {
+    "name": "whitespace '\\x1f'",
+    "op": "clean",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u001fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "python": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "rust_before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\u001fbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+    "name": "keyword whitespace '\\x1f'",
+    "op": "keywords",
+    "input": "\u001f--abc—\u001f",
+    "python": "abc",
+    "rust_before": "\u001f--abc—\u001f"
+  },
+  {
+    "name": "whitespace '\\xa0'",
+    "op": "clean",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "python": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "rust_before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+    "name": "keyword whitespace '\\xa0'",
+    "op": "keywords",
+    "input": " --abc— ",
+    "python": "abc",
+    "rust_before": "abc"
+  },
+  {
+    "name": "whitespace '\\x85'",
+    "op": "clean",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "python": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "rust_before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+    "name": "keyword whitespace '\\x85'",
+    "op": "keywords",
+    "input": "--abc—",
+    "python": "abc",
+    "rust_before": "abc"
+  },
+  {
+    "name": "whitespace '\\u2003'",
+    "op": "clean",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "python": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "rust_before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+    "name": "keyword whitespace '\\u2003'",
+    "op": "keywords",
+    "input": " --abc— ",
+    "python": "abc",
+    "rust_before": "abc"
+  },
+  {
+    "name": "whitespace '\\u200b'",
+    "op": "clean",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa​bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "python": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa​bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "rust_before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa​bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+    "name": "keyword whitespace '\\u200b'",
+    "op": "keywords",
+    "input": "​--abc—​",
+    "python": "​--abc—​",
+    "rust_before": "​--abc—​"
+  },
+  {
+    "name": "whitespace '\\ufeff'",
+    "op": "clean",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa﻿bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "python": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa﻿bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "rust_before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa﻿bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+    "name": "keyword whitespace '\\ufeff'",
+    "op": "keywords",
+    "input": "﻿--abc—﻿",
+    "python": "﻿--abc—﻿",
+    "rust_before": "﻿--abc—﻿"
+  },
+  {
+    "name": "https://protext.cz/zprava/4",
+    "op": "id",
+    "input": "https://protext.cz/zprava/4",
+    "python": 4,
+    "rust_before": 4
+  },
+  {
+    "name": "https://protext.cz/zpravy/show/5?id=7",
+    "op": "id",
+    "input": "https://protext.cz/zpravy/show/5?id=7",
+    "python": 5,
+    "rust_before": 5
+  },
+  {
+    "name": "https://protext.cz/?id=12x",
+    "op": "id",
+    "input": "https://protext.cz/?id=12x",
+    "python": null,
+    "rust_before": null
+  },
+  {
+    "name": "https://protext.cz/?id=١٢",
+    "op": "id",
+    "input": "https://protext.cz/?id=١٢",
+    "python": 12,
+    "rust_before": null
+  },
+  {
+    "name": "https://protext.cz/?id=9999999999999999999999999999999999999999",
+    "op": "id",
+    "input": "https://protext.cz/?id=9999999999999999999999999999999999999999",
+    "python": 9999999999999999999999999999999999999999,
+    "rust_before": null,
+    "intentional_rust": null,
+    "reason": "IDs use signed 64-bit integers; oversized URL IDs are ignored."
+  },
+  {
+    "name": "https://example.com/?id=7",
+    "op": "id",
+    "input": "https://example.com/?id=7",
+    "python": null,
+    "rust_before": null
+  },
+  {
+    "name": "https://protext.cz/?id=0",
+    "op": "id",
+    "input": "https://protext.cz/?id=0",
+    "python": 0,
+    "rust_before": 0
+  },
+  {
+    "name": "title short",
+    "op": "article",
+    "input": "<h1>short</h1><div class=\"fulltext\">body body body body body body body body body body body body body body body body body body body body body body body body body </div>",
+    "python": null,
+    "rust_before": {
+      "title": "short",
+      "content": "body body body body body body body body body body body body body body body body body body body body body body body body body",
+      "link": "https://www.protext.cz/zpravy/show/7",
+      "id": 7
+    },
+    "intentional_rust": {
+      "title": "short",
+      "content": "body body body body body body body body body body body body body body body body body body body body body body body body body",
+      "link": "https://www.protext.cz/zpravy/show/7",
+      "id": 7
+    },
+    "reason": "Keep a nonempty short headline; Python incorrectly applies the body stub limit to titles."
+  },
+  {
+    "name": "title xxxxxxxxxxxx",
+    "op": "article",
+    "input": "<h1>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</h1><div class=\"fulltext\">body body body body body body body body body body body body body body body body body body body body body body body body body </div>",
+    "python": null,
+    "rust_before": {
+      "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "content": "body body body body body body body body body body body body body body body body body body body body body body body body body",
+      "link": "https://www.protext.cz/zpravy/show/7",
+      "id": 7
+    },
+    "intentional_rust": {
+      "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "content": "body body body body body body body body body body body body body body body body body body body body body body body body body",
+      "link": "https://www.protext.cz/zpravy/show/7",
+      "id": 7
+    },
+    "reason": "Keep a nonempty short headline; Python incorrectly applies the body stub limit to titles."
+  },
+  {
+    "name": "title xxxxxxxxxxxx",
+    "op": "article",
+    "input": "<h1>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</h1><div class=\"fulltext\">body body body body body body body body body body body body body body body body body body body body body body body body body </div>",
+    "python": {
+      "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "content": "body body body body body body body body body body body body body body body body body body body body body body body body body",
+      "link": "https://www.protext.cz/zpravy/show/7",
+      "id": 7
+    },
+    "rust_before": {
+      "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "content": "body body body body body body body body body body body body body body body body body body body body body body body body body",
+      "link": "https://www.protext.cz/zpravy/show/7",
+      "id": 7
+    }
+  },
+  {
+    "name": "title <b>xxxxxxxxx",
+    "op": "article",
+    "input": "<h1><b>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</b></h1><div class=\"fulltext\">body body body body body body body body body body body body body body body body body body body body body body body body body </div>",
+    "python": {
+      "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "content": "body body body body body body body body body body body body body body body body body body body body body body body body body",
+      "link": "https://www.protext.cz/zpravy/show/7",
+      "id": 7
+    },
+    "rust_before": {
+      "title": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "content": "body body body body body body body body body body body body body body body body body body body body body body body body body",
+      "link": "https://www.protext.cz/zpravy/show/7",
+      "id": 7
+    }
+  },
+  {
+    "name": "title a\u001cbxxxxxxxxx",
+    "op": "article",
+    "input": "<h1>a\u001cbxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</h1><div class=\"fulltext\">body body body body body body body body body body body body body body body body body body body body body body body body body </div>",
+    "python": {
+      "title": "a bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "content": "body body body body body body body body body body body body body body body body body body body body body body body body body",
+      "link": "https://www.protext.cz/zpravy/show/7",
+      "id": 7
+    },
+    "rust_before": {
+      "title": "a\u001cbxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "content": "body body body body body body body body body body body body body body body body body body body body body body body body body",
+      "link": "https://www.protext.cz/zpravy/show/7",
+      "id": 7
+    }
+  },
+  {
+    "name": "body <div class=\"fulltext\">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "op": "content",
+    "input": "<div class=\"fulltext\">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>",
+    "python": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "rust_before": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+    "name": "body <div class=\"fulltext\"><p>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa<p>bb",
+    "op": "content",
+    "input": "<div class=\"fulltext\"><p>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa<p>bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb</div>",
+    "python": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "rust_before": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  {
+    "name": "body <div class=\"fulltext\">a <script>ignored</script>xxxxxxxxxxxx",
+    "op": "content",
+    "input": "<div class=\"fulltext\">a <script>ignored</script>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>",
+    "python": "a xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "rust_before": "a xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+    "name": "body <div class=\"fulltext\"><![CDATA[xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "op": "content",
+    "input": "<div class=\"fulltext\"><![CDATA[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx]]></div>",
+    "python": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "rust_before": ""
+  },
+  {
+    "name": "body <div class=\"fulltext\"><template>xxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "op": "content",
+    "input": "<div class=\"fulltext\"><template>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</template>yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy</div>",
+    "python": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+    "rust_before": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+  },
+  {
+    "name": "body <table><div class=\"fulltext\">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "op": "content",
+    "input": "<table><div class=\"fulltext\">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div></table>",
+    "python": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "rust_before": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  {
+    "name": "RSS 42",
+    "op": "rss",
+    "input": "<rss><item><link>https://protext.cz/zprava/4</link></item></rss>",
+    "python": [
+      4
+    ],
+    "rust_before": [
+      4
+    ]
+  },
+  {
+    "name": "RSS 43",
+    "op": "rss",
+    "input": "<rss><item><link>https://protext.cz/zprava/4</link></item>",
+    "python": null,
+    "rust_before": [
+      4
+    ]
+  },
+  {
+    "name": "RSS 44",
+    "op": "rss",
+    "input": "<rss><item><link>https://protext.cz/zprava/4</link><link>https://protext.cz/zprava/9</link></item></rss>",
+    "python": [
+      4
+    ],
+    "rust_before": [
+      4,
+      9
+    ]
+  },
+  {
+    "name": "RSS 45",
+    "op": "rss",
+    "input": "<rss><item><wrapper><link>https://protext.cz/zprava/9</link></wrapper></item></rss>",
+    "python": [],
+    "rust_before": [
+      9
+    ]
+  },
+  {
+    "name": "RSS 46",
+    "op": "rss",
+    "input": "<rss><item><link><![CDATA[https://protext.cz/zprava/4]]></link></item></rss>",
+    "python": [
+      4
+    ],
+    "rust_before": [
+      4
+    ]
+  },
+  {
+    "name": "RSS 47",
+    "op": "rss",
+    "input": "<rss><item><link>https://protext.cz/?id=4&amp;x=2</link></item></rss>",
+    "python": [
+      4
+    ],
+    "rust_before": [
+      4
+    ]
+  },
+  {
+    "name": "RSS 48",
+    "op": "rss",
+    "input": "<rss/>garbage",
+    "python": null,
+    "rust_before": []
+  },
+  {
+    "name": "RSS 49",
+    "op": "rss",
+    "input": "<rss><item><link>https://protext.cz/?id=4&bad;</link></item></rss>",
+    "python": null,
+    "rust_before": [
+      4
+    ]
+  },
+  {
+    "name": "RSS 50",
+    "op": "rss",
+    "input": "<rss xmlns=\"urn:test\"><item><link>https://protext.cz/zprava/9</link></item></rss>",
+    "python": [],
+    "rust_before": [
+      9
+    ]
+  },
+  {
+    "name": "encoding b''",
+    "op": "decode",
+    "input": [],
+    "python": "",
+    "rust_before": ""
+  },
+  {
+    "name": "encoding b'ASCII'",
+    "op": "decode",
+    "input": [
+      65,
+      83,
+      67,
+      73,
+      73
+    ],
+    "python": "ASCII",
+    "rust_before": "ASCII"
+  },
+  {
+    "name": "encoding b'\\xef\\xbb\\xbfhello'",
+    "op": "decode",
+    "input": [
+      239,
+      187,
+      191,
+      104,
+      101,
+      108,
+      108,
+      111
+    ],
+    "python": "hello",
+    "rust_before": "hello"
+  },
+  {
+    "name": "encoding b'P\\xf8\\xedli\\x9a \\x9elu\\x9dou\\xe8k\\xfd'",
+    "op": "decode",
+    "input": [
+      80,
+      248,
+      237,
+      108,
+      105,
+      154,
+      32,
+      158,
+      108,
+      117,
+      157,
+      111,
+      117,
+      232,
+      107,
+      253,
+      32,
+      107,
+      249,
+      242,
+      32,
+      250,
+      112,
+      236,
+      108,
+      32,
+      239,
+      225,
+      98,
+      101,
+      108,
+      115,
+      107,
+      233,
+      32,
+      243,
+      100,
+      121,
+      46,
+      32,
+      80,
+      248,
+      237,
+      108,
+      105,
+      154,
+      32,
+      158,
+      108,
+      117,
+      157,
+      111,
+      117,
+      232,
+      107,
+      253,
+      32,
+      107,
+      249,
+      242,
+      32,
+      250,
+      112,
+      236,
+      108,
+      32,
+      239,
+      225,
+      98,
+      101,
+      108,
+      115,
+      107,
+      233,
+      32,
+      243,
+      100,
+      121,
+      46,
+      32,
+      80,
+      248,
+      237,
+      108,
+      105,
+      154,
+      32,
+      158,
+      108,
+      117,
+      157,
+      111,
+      117,
+      232,
+      107,
+      253,
+      32,
+      107,
+      249,
+      242,
+      32,
+      250,
+      112,
+      236,
+      108,
+      32,
+      239,
+      225,
+      98,
+      101,
+      108,
+      115,
+      107,
+      233,
+      32,
+      243,
+      100,
+      121,
+      46,
+      32,
+      80,
+      248,
+      237,
+      108,
+      105,
+      154,
+      32,
+      158,
+      108,
+      117,
+      157,
+      111,
+      117,
+      232,
+      107,
+      253,
+      32,
+      107,
+      249,
+      242,
+      32,
+      250,
+      112,
+      236,
+      108,
+      32,
+      239,
+      225,
+      98,
+      101,
+      108,
+      115,
+      107,
+      233,
+      32,
+      243,
+      100,
+      121,
+      46,
+      32,
+      80,
+      248,
+      237,
+      108,
+      105,
+      154,
+      32,
+      158,
+      108,
+      117,
+      157,
+      111,
+      117,
+      232,
+      107,
+      253,
+      32,
+      107,
+      249,
+      242,
+      32,
+      250,
+      112,
+      236,
+      108,
+      32,
+      239,
+      225,
+      98,
+      101,
+      108,
+      115,
+      107,
+      233,
+      32,
+      243,
+      100,
+      121,
+      46,
+      32,
+      80,
+      248,
+      237,
+      108,
+      105,
+      154,
+      32,
+      158,
+      108,
+      117,
+      157,
+      111,
+      117,
+      232,
+      107,
+      253,
+      32,
+      107,
+      249,
+      242,
+      32,
+      250,
+      112,
+      236,
+      108,
+      32,
+      239,
+      225,
+      98,
+      101,
+      108,
+      115,
+      107,
+      233,
+      32,
+      243,
+      100,
+      121,
+      46,
+      32,
+      80,
+      248,
+      237,
+      108,
+      105,
+      154,
+      32,
+      158,
+      108,
+      117,
+      157,
+      111,
+      117,
+      232,
+      107,
+      253,
+      32,
+      107,
+      249,
+      242,
+      32,
+      250,
+      112,
+      236,
+      108,
+      32,
+      239,
+      225,
+      98,
+      101,
+      108,
+      115,
+      107,
+      233,
+      32,
+      243,
+      100,
+      121,
+      46,
+      32,
+      80,
+      248,
+      237,
+      108,
+      105,
+      154,
+      32,
+      158,
+      108,
+      117,
+      157,
+      111,
+      117,
+      232,
+      107,
+      253,
+      32,
+      107,
+      249,
+      242,
+      32,
+      250,
+      112,
+      236,
+      108,
+      32,
+      239,
+      225,
+      98,
+      101,
+      108,
+      115,
+      107,
+      233,
+      32,
+      243,
+      100,
+      121,
+      46,
+      32,
+      80,
+      248,
+      237,
+      108,
+      105,
+      154,
+      32,
+      158,
+      108,
+      117,
+      157,
+      111,
+      117,
+      232,
+      107,
+      253,
+      32,
+      107,
+      249,
+      242,
+      32,
+      250,
+      112,
+      236,
+      108,
+      32,
+      239,
+      225,
+      98,
+      101,
+      108,
+      115,
+      107,
+      233,
+      32,
+      243,
+      100,
+      121,
+      46,
+      32,
+      80,
+      248,
+      237,
+      108,
+      105,
+      154,
+      32,
+      158,
+      108,
+      117,
+      157,
+      111,
+      117,
+      232,
+      107,
+      253,
+      32,
+      107,
+      249,
+      242,
+      32,
+      250,
+      112,
+      236,
+      108,
+      32,
+      239,
+      225,
+      98,
+      101,
+      108,
+      115,
+      107,
+      233,
+      32,
+      243,
+      100,
+      121,
+      46,
+      32
+    ],
+    "python": "Pψνli luouθkύ kως ϊpμl οαbelskι σdy. Pψνli luouθkύ kως ϊpμl οαbelskι σdy. Pψνli luouθkύ kως ϊpμl οαbelskι σdy. Pψνli luouθkύ kως ϊpμl οαbelskι σdy. Pψνli luouθkύ kως ϊpμl οαbelskι σdy. Pψνli luouθkύ kως ϊpμl οαbelskι σdy. Pψνli luouθkύ kως ϊpμl οαbelskι σdy. Pψνli luouθkύ kως ϊpμl οαbelskι σdy. Pψνli luouθkύ kως ϊpμl οαbelskι σdy. Pψνli luouθkύ kως ϊpμl οαbelskι σdy. ",
+    "rust_before": "Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. ",
+    "intentional_rust": "Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. Příliš žluťoučký kůň úpěl ďábelské ódy. ",
+    "reason": "Use chardetng for legacy encodings; this Windows-1250 sample is decoded correctly instead of as Greek."
+  },
+  {
+    "name": "encoding b'\\xff\\xfeH\\x00e\\x00l\\x00l\\x00o\\x00 \\x00w\\x00'",
+    "op": "decode",
+    "input": [
+      255,
+      254,
+      72,
+      0,
+      101,
+      0,
+      108,
+      0,
+      108,
+      0,
+      111,
+      0,
+      32,
+      0,
+      119,
+      0,
+      111,
+      0,
+      114,
+      0,
+      108,
+      0,
+      100,
+      0
+    ],
+    "python": "Hello world",
+    "rust_before": "Hello world"
+  },
+  {
+    "name": "encoding b'\\xff\\xfeA\\x00'",
+    "op": "decode",
+    "input": [
+      255,
+      254,
+      65,
+      0
+    ],
+    "python": "A",
+    "rust_before": "A"
+  },
+  {
+    "name": "encoding b'\\x81\\xff'",
+    "op": "decode",
+    "input": [
+      129,
+      255
+    ],
+    "python": "",
+    "rust_before": "Б ",
+    "intentional_rust": "Б ",
+    "reason": "Encoding detectors disagree on ambiguous invalid byte sequences; Rust replaces undecodable input rather than dropping it."
+  },
+  {
+    "name": "IDs 58",
+    "op": "dedup",
+    "input": [
+      {
+        "id": true
+      },
+      {
+        "id": 1
+      },
+      {
+        "id": 1.0
+      },
+      {
+        "id": "1"
+      },
+      {
+        "id": null
+      },
+      {
+        "id": null
+      }
+    ],
+    "python": [
+      [
+        {
+          "id": true
+        },
+        {
+          "id": "1"
+        },
+        {
+          "id": null
+        },
+        {
+          "id": null
+        }
+      ],
+      2
+    ],
+    "rust_before": [
+      [
+        {
+          "id": true
+        },
+        {
+          "id": "1"
+        },
+        {
+          "id": null
+        },
+        {
+          "id": null
+        }
+      ],
+      2
+    ]
+  },
+  {
+    "name": "IDs 59",
+    "op": "dedup",
+    "input": [
+      {
+        "id": 9223372036854775808
+      },
+      {
+        "id": 9.223372036854776e+18
+      }
+    ],
+    "python": [
+      [
+        {
+          "id": 9223372036854775808
+        }
+      ],
+      1
+    ],
+    "rust_before": [
+      [
+        {
+          "id": 9223372036854775808
+        }
+      ],
+      1
+    ]
+  },
+  {
+    "name": "IDs 60",
+    "op": "dedup",
+    "input": [
+      {
+        "id": [
+          1
+        ]
+      },
+      {
+        "id": [
+          1
+        ]
+      }
+    ],
+    "python": {
+      "error": "TypeError"
+    },
+    "rust_before": [
+      [
+        {
+          "id": [
+            1
+          ]
+        }
+      ],
+      1
+    ],
+    "intentional_rust": [
+      [
+        {
+          "id": [
+            1
+          ]
+        }
+      ],
+      1
+    ],
+    "reason": "Structured IDs have a stable JSON identity instead of raising an unhashable-type error."
+  },
+  {
+    "name": "IDs 61",
+    "op": "dedup",
+    "input": [
+      null,
+      {},
+      3
+    ],
+    "python": {
+      "error": "AttributeError"
+    },
+    "rust_before": [
+      [
+        null,
+        {},
+        3
+      ],
+      0
+    ],
+    "intentional_rust": [
+      [
+        null,
+        {},
+        3
+      ],
+      0
+    ],
+    "reason": "Malformed article rows are preserved safely instead of raising AttributeError."
+  },
+  {
+    "name": "category whitespace",
+    "op": "counts",
+    "input": [
+      {
+        "category": "\u001cSport\u001c"
+      },
+      {
+        "category": "Sport"
+      },
+      {
+        "category": null
+      }
+    ],
+    "python": {
+      "Sport": 2
+    },
+    "rust_before": {
+      "\u001cSport\u001c": 1,
+      "Sport": 1
+    }
+  },
+  {
+    "name": "retry429403",
+    "op": "request",
+    "input": {
+      "statuses": [
+        429,
+        403,
+        200
+      ],
+      "retries": 3,
+      "tor": true,
+      "retry_after": "7"
+    },
+    "python": {
+      "status": 200,
+      "sleeps": [
+        0.125,
+        7.0,
+        0.125,
+        15.0,
+        0.125
+      ],
+      "renewals": 2,
+      "requests": 3
+    }
+  },
+  {
+    "name": "retry503",
+    "op": "request",
+    "input": {
+      "statuses": [
+        503,
+        503,
+        503
+      ],
+      "retries": 3,
+      "tor": true,
+      "retry_after": null
+    },
+    "python": {
+      "status": null,
+      "sleeps": [
+        0.125,
+        15.0,
+        0.125,
+        15.0,
+        0.125,
+        15.0
+      ],
+      "renewals": 2,
+      "requests": 3
+    }
+  },
+  {
+    "name": "network errors",
+    "op": "request",
+    "input": {
+      "statuses": [
+        "timeout",
+        404,
+        "closed"
+      ],
+      "retries": 3,
+      "tor": true,
+      "retry_after": null
+    },
+    "python": {
+      "status": null,
+      "sleeps": [
+        0.125,
+        6.0,
+        0.125,
+        7.0,
+        0.125
+      ],
+      "renewals": 0,
+      "requests": 3
+    }
+  },
+  {
+    "name": "zero retries",
+    "op": "request",
+    "input": {
+      "statuses": [],
+      "retries": 0,
+      "tor": false,
+      "retry_after": null
+    },
+    "python": {
+      "status": null,
+      "sleeps": [],
+      "renewals": 0,
+      "requests": 0
+    }
+  },
+  {
+    "name": "bad Retry-After",
+    "op": "request",
+    "input": {
+      "statuses": [
+        429,
+        200
+      ],
+      "retries": 2,
+      "tor": false,
+      "retry_after": "invalid"
+    },
+    "python": {
+      "error": "ValueError"
+    },
+    "intentional_rust": {
+      "status": 200,
+      "sleeps": [
+        0.125,
+        180.0,
+        0.125
+      ],
+      "renewals": 0,
+      "requests": 2
+    },
+    "reason": "Malformed Retry-After falls back to 180 seconds instead of raising ValueError."
+  },
+  {
+    "name": "negative Retry-After",
+    "op": "request",
+    "input": {
+      "statuses": [
+        429,
+        200
+      ],
+      "retries": 2,
+      "tor": false,
+      "retry_after": "-1"
+    },
+    "python": {
+      "error": "ValueError"
+    },
+    "intentional_rust": {
+      "status": 200,
+      "sleeps": [
+        0.125,
+        180.0,
+        0.125
+      ],
+      "renewals": 0,
+      "requests": 2
+    },
+    "reason": "Negative Retry-After falls back to 180 seconds instead of passing a negative sleep duration."
+  },
+  {
+    "name": "spaced Retry-After",
+    "op": "request",
+    "input": {
+      "statuses": [
+        429,
+        200
+      ],
+      "retries": 2,
+      "tor": false,
+      "retry_after": " +7 "
+    },
+    "python": {
+      "status": 200,
+      "sleeps": [
+        0.125,
+        7.0,
+        0.125
+      ],
+      "renewals": 0,
+      "requests": 2
+    }
+  },
+  {
+    "name": "huge Retry-After",
+    "op": "request",
+    "input": {
+      "statuses": [
+        429,
+        200
+      ],
+      "retries": 2,
+      "tor": false,
+      "retry_after": "18446744073709551615"
+    },
+    "python": {
+      "error": "OverflowError"
+    },
+    "intentional_rust": {
+      "status": 200,
+      "sleeps": [
+        0.125,
+        86400.0,
+        0.125
+      ],
+      "renewals": 0,
+      "requests": 2
+    },
+    "reason": "Retry-After is capped at 86400 seconds instead of overflowing the platform timer."
+  },
+  {
+    "name": "reverse batches",
+    "op": "scan",
+    "input": {
+      "min": 1,
+      "max": 8,
+      "batch": 4,
+      "step": 2,
+      "reverse": true,
+      "output": true,
+      "selected": []
+    },
+    "python": {
+      "ids": [
+        8,
+        6,
+        4,
+        2
+      ],
+      "file": [
+        8,
+        6,
+        4,
+        2
+      ]
+    }
+  },
+  {
+    "name": "forward batches",
+    "op": "scan",
+    "input": {
+      "min": 1,
+      "max": 8,
+      "batch": 3,
+      "step": 2,
+      "reverse": false,
+      "output": true,
+      "selected": []
+    },
+    "python": {
+      "ids": [
+        1,
+        3,
+        4,
+        6,
+        7
+      ],
+      "file": [
+        1,
+        3,
+        4,
+        6,
+        7
+      ]
+    }
+  },
+  {
+    "name": "empty scan output",
+    "op": "scan",
+    "input": {
+      "min": 1,
+      "max": 1,
+      "batch": 2,
+      "step": 1,
+      "reverse": true,
+      "output": true,
+      "selected": [
+        "Other"
+      ]
+    },
+    "python": {
+      "ids": [],
+      "file": ""
+    },
+    "intentional_rust": {
+      "ids": [],
+      "file": []
+    },
+    "reason": "An empty parallel scan writes valid JSON [] instead of a zero-byte file."
+  },
+  {
+    "name": "sample without output",
+    "op": "scan",
+    "input": {
+      "min": 1,
+      "max": 1,
+      "batch": 2,
+      "step": 1,
+      "reverse": true,
+      "output": false,
+      "selected": []
+    },
+    "python": {
+      "error": "TypeError"
+    },
+    "intentional_rust": {
+      "ids": [
+        1
+      ],
+      "file": null
+    },
+    "reason": "An in-memory batch scan does not attempt to write to a None path."
+  },
+  {
+    "name": "maximum signed ID",
+    "op": "scan",
+    "input": {
+      "min": 9223372036854775807,
+      "max": 9223372036854775807,
+      "batch": 500,
+      "step": 1,
+      "reverse": true,
+      "output": false,
+      "selected": []
+    },
+    "python": {
+      "error": "TypeError"
+    },
+    "intentional_rust": {
+      "ids": [
+        9223372036854775807
+      ],
+      "file": null
+    },
+    "reason": "An in-memory batch scan supports i64::MAX without overflowing its batch endpoint."
+  },
+  {
+    "name": "minimum signed ID",
+    "op": "scan",
+    "input": {
+      "min": -9223372036854775808,
+      "max": -9223372036854775808,
+      "batch": 500,
+      "step": 1,
+      "reverse": false,
+      "output": false,
+      "selected": []
+    },
+    "python": {
+      "error": "TypeError"
+    },
+    "intentional_rust": {
+      "ids": [
+        -9223372036854775808
+      ],
+      "file": null
+    },
+    "reason": "An in-memory batch scan supports i64::MIN without overflowing its batch endpoint."
+  },
+  {
+    "name": "category indices ١,２",
+    "op": "select",
+    "input": "١,２",
+    "python": [
+      "Sport",
+      "Economy"
+    ]
+  },
+  {
+    "name": "category indices +1_0,1",
+    "op": "select",
+    "input": "+1_0,1",
+    "python": [
+      "Sport"
+    ]
+  },
+  {
+    "name": "category indices 1__0",
+    "op": "select",
+    "input": "1__0",
+    "python": {
+      "error": "ValueError"
+    }
+  },
+  {
+    "name": "category indices 0,-1,2",
+    "op": "select",
+    "input": "0,-1,2",
+    "python": [
+      "Economy"
+    ]
+  },
+  {
+    "name": "category indices 1,999999999999999999999999999999999999999999",
+    "op": "select",
+    "input": "1,999999999999999999999999999999999999999999",
+    "python": [
+      "Sport"
+    ]
+  },
+  {
+    "name": "load missing",
+    "op": "load",
+    "input": null,
+    "python": []
+  },
+  {
+    "name": "load BOM",
+    "op": "load",
+    "input": [
+      239,
+      187,
+      191,
+      91,
+      93
+    ],
+    "python": []
+  },
+  {
+    "name": "load CRLF",
+    "op": "load",
+    "input": [
+      91,
+      13,
+      10,
+      32,
+      123,
+      34,
+      105,
+      100,
+      34,
+      58,
+      49,
+      125,
+      13,
+      10,
+      93
+    ],
+    "python": [
+      {
+        "id": 1
+      }
+    ]
+  },
+  {
+    "name": "load invalid UTF8",
+    "op": "load",
+    "input": [
+      91,
+      34,
+      255,
+      34,
+      93
+    ],
+    "python": {
+      "error": "UnicodeDecodeError"
+    },
+    "intentional_rust": [],
+    "reason": "Invalid UTF-8 storage is treated as unreadable input, consistently with other read errors."
+  },
+  {
+    "name": "load nonfinite",
+    "op": "load",
+    "input": [
+      91,
+      123,
+      34,
+      105,
+      100,
+      34,
+      58,
+      78,
+      97,
+      78,
+      125,
+      93
+    ],
+    "python": {
+      "accepts_nonfinite": true
+    },
+    "intentional_rust": [],
+    "reason": "Only standard JSON is accepted; NaN and Infinity are rejected."
+  },
+  {
+    "name": "load deep",
+    "op": "load",
+    "input": [
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      91,
+      48,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93,
+      93
+    ],
+    "python": {
+      "accepts_depth_150": true
+    },
+    "intentional_rust": [],
+    "reason": "JSON nesting is limited by serde_json to protect the parser stack."
+  },
+  {
+    "name": "load empty",
+    "op": "load",
+    "input": [],
+    "python": []
+  },
+  {
+    "name": "load scalar",
+    "op": "load",
+    "input": [
+      123,
+      125
+    ],
+    "python": []
+  },
+  {
+    "name": "HTML edge 90",
+    "op": "content",
+    "input": "<div class=\"fulltext\"><p>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\u0000</p></div>",
+    "python": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\u0000",
+    "intentional_rust": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "reason": "The HTML5 parser drops a NUL in HTML text rather than preserving it."
+  },
+  {
+    "name": "HTML edge 91",
+    "op": "content",
+    "input": "<div class=\"other\" class=\"fulltext\">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>",
+    "python": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "intentional_rust": "",
+    "reason": "The HTML5 parser keeps the first duplicate attribute; html.parser keeps the last."
+  },
+  {
+    "name": "HTML edge 92",
+    "op": "category",
+    "input": "<div class=\"fulltext-metadata\"><p><strong>Kategorie</strong><span>Sport<p><strong>Other</strong><span>Economy</div>",
+    "python": "SportOtherEconomy, Economy",
+    "intentional_rust": "Sport",
+    "reason": "The HTML5 parser closes malformed paragraphs instead of nesting them."
+  },
+  {
+    "name": "Repeated BOM b'\\xef\\xbb\\xbf\\xef\\xbb\\xbf'",
+    "op": "decode",
+    "input": [
+      239,
+      187,
+      191,
+      239,
+      187,
+      191,
+      104,
+      101,
+      108,
+      108,
+      111
+    ],
+    "python": "﻿hello"
+  },
+  {
+    "name": "Repeated BOM b'\\xff\\xfe\\xff\\xfeA\\x00'",
+    "op": "decode",
+    "input": [
+      255,
+      254,
+      255,
+      254,
+      65,
+      0
+    ],
+    "python": "﻿A"
+  },
+  {
+    "name": "Million-character Unicode article",
+    "op": "large",
+    "input": 1000000,
+    "python": 1000000
+  },
+  {
+    "name": "Writing JSON over a directory",
+    "op": "write_directory",
+    "input": null,
+    "python": {
+      "error": true
+    }
+  }
+]

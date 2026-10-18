@@ -4,6 +4,7 @@
 // Author: Jan Alexandr Kopřiva
 // License: MIT
 
+use crate::parsing::trim;
 use serde_json::{Map, Value};
 use std::{collections::HashSet, fs, io, path::Path, sync::Mutex};
 pub static FILE_LOCK: Mutex<()> = Mutex::new(());
@@ -110,11 +111,12 @@ pub fn save_articles_progressively(
 pub fn count_categories(articles: &[Value]) -> Map<String, Value> {
     let mut counts = Map::new();
     for article in articles {
-        let cat = article
-            .get("category")
-            .and_then(Value::as_str)
-            .unwrap_or("")
-            .trim();
+        let cat = trim(
+            article
+                .get("category")
+                .and_then(Value::as_str)
+                .unwrap_or(""),
+        );
         if !cat.is_empty() {
             let n = counts.get(cat).and_then(Value::as_u64).unwrap_or(0) + 1;
             counts.insert(cat.into(), n.into());
@@ -135,13 +137,9 @@ pub fn filter_articles_by_categories(articles: &[Value], selected: &[String]) ->
         .iter()
         .filter(|a| {
             selected.is_empty()
-                || selected.iter().any(|s| {
-                    s == a
-                        .get("category")
-                        .and_then(Value::as_str)
-                        .unwrap_or("")
-                        .trim()
-                })
+                || selected
+                    .iter()
+                    .any(|s| s == trim(a.get("category").and_then(Value::as_str).unwrap_or("")))
         })
         .cloned()
         .collect()

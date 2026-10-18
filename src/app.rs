@@ -4,6 +4,7 @@
 // Author: Jan Alexandr Kopřiva
 // License: MIT
 
+use crate::parsing::{parse_integer, trim};
 use crate::{
     network::Network,
     scanning::{scan_id_range_parallel_batch, ScanOptions},
@@ -15,7 +16,8 @@ use std::{
     fs,
     io::{self, BufRead, Write},
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Stdio},
+    time::{Duration, Instant},
 };
 
 pub fn timestamp() -> String {
@@ -28,7 +30,30 @@ pub fn input(reader: &mut dyn BufRead, prompt: &str) -> io::Result<String> {
     if reader.read_line(&mut s)? == 0 {
         return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "End of input"));
     }
-    Ok(s.trim().to_string())
+    Ok(trim(&s).to_string())
+}
+pub fn run_service_command(program: &str, args: &[&str], timeout: Duration) -> bool {
+    let Ok(mut child) = Command::new(program)
+        .args(args)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+    else {
+        return false;
+    };
+    let start = Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => return status.success(),
+            Ok(None) if start.elapsed() < timeout => std::thread::sleep(Duration::from_millis(20)),
+            _ => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return false;
+            }
+        }
+    }
 }
 pub fn start_tor_service(network: &Network) -> bool {
     if network.check_tor_connection() {
@@ -40,11 +65,7 @@ pub fn start_tor_service(network: &Network) -> bool {
         ("brew", vec!["services", "start", "tor"]),
         ("sudo", vec!["systemctl", "start", "tor"]),
     ] {
-        if Command::new(program)
-            .args(args)
-            .output()
-            .is_ok_and(|r| r.status.success())
-        {
+        if run_service_command(program, &args, Duration::from_secs(30)) {
             started = true;
             network.transport.sleep(5.0);
             break;
@@ -124,7 +145,12 @@ pub fn get_categories_from_sample(
     size: usize,
 ) -> io::Result<Vec<(String, u64)>> {
     println!("\nRetrieving available categories from a sample of {size} articles...");
-    let mut options = ScanOptions::new((latest - size as i64 + 1).max(1), latest);
+    let mut options = ScanOptions::new(
+        (i128::from(latest) - size as i128 + 1)
+            .max(1)
+            .min(i64::MAX as i128) as i64,
+        latest,
+    );
     options.workers = 5;
     options.batch_size = 25;
     let articles = scan_id_range_parallel_batch(network, &options)?;
@@ -163,22 +189,25 @@ pub fn select_indices(
     if choice.is_empty() {
         return Ok(Vec::new());
     }
-    choice
-        .split(',')
-        .map(|s| s.trim().parse::<i64>())
-        .collect::<Result<Vec<_>, _>>()
-        .map(|ids| {
-            ids.into_iter()
-                .filter_map(|i| {
-                    if i > 0 {
-                        categories.get((i - 1) as usize).map(|p| p.0.clone())
-                    } else {
-                        None
-                    }
-                })
-                .collect()
-        })
+    static INTEGER: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"^[+-]?\d(?:_?\d)*$").unwrap());
+    let mut selected = Vec::new();
+    for token in choice.split(',').map(trim) {
+        if !INTEGER.is_match(token) {
+            return Err("".parse::<i64>().unwrap_err());
+        }
+        // Python integers are unbounded; a huge valid index simply selects nothing.
+        if let Ok(i) = parse_integer::<i64>(token) {
+            if i > 0 {
+                if let Some(category) = categories.get((i - 1) as usize) {
+                    selected.push(category.0.clone());
+                }
+            }
+        }
+    }
+    Ok(selected)
 }
+
 pub fn select_categories_at_start(
     reader: &mut dyn BufRead,
     categories: &[(String, u64)],
@@ -379,19 +408,19 @@ pub fn run(network: &Network, reader: &mut dyn BufRead, root: &Path) -> io::Resu
             }
         }
         "7" => {
-            let min = input(reader, "Enter minimum ID: ")?.parse::<i64>();
-            let max = input(reader, "Enter maximum ID: ")?.parse::<i64>();
+            let min = parse_integer::<i64>(&input(reader, "Enter minimum ID: ")?);
+            let max = parse_integer::<i64>(&input(reader, "Enter maximum ID: ")?);
             let workers = input(reader, "Enter number of workers (recommended 50): ")?;
             let batch = input(reader, "Enter batch size (recommended 1000): ")?;
             let workers = if workers.is_empty() {
                 Ok(50)
             } else {
-                workers.parse::<usize>()
+                parse_integer::<usize>(&workers)
             };
             let batch = if batch.is_empty() {
                 Ok(1000)
             } else {
-                batch.parse::<usize>()
+                parse_integer::<usize>(&batch)
             };
             match (min, max, workers, batch) {
                 (Ok(min), Ok(max), Ok(workers), Ok(batch)) => {

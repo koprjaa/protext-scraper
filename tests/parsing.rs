@@ -211,3 +211,27 @@ fn full_content_selectors_removal_and_threshold() {
         Some("x".repeat(101))
     );
 }
+
+#[test]
+fn invalid_selector_returns_none() {
+    assert!(first(&page(), "[broken").is_none());
+}
+#[test]
+fn unicode_decimal_blocks_and_overflow() {
+    for digits in ["١٢", "１２", "𝟙𝟚", "१२", "12"] {
+        assert_eq!(
+            extract_protext_id(&format!("https://protext.cz/?id={digits}")),
+            Some(12)
+        );
+    }
+    assert_eq!(
+        extract_protext_id("https://protext.cz/?id=9223372036854775808"),
+        None
+    );
+}
+#[test]
+fn cdata_title_and_body_and_template_exclusion() {
+    let a = parse_article(&format!("<h1><![CDATA[short]]></h1><div class='fulltext'><![CDATA[{}]]><template>hidden</template></div>", "x".repeat(60)), 1).unwrap();
+    assert_eq!(a["title"], "short");
+    assert_eq!(a["content"], "x".repeat(60));
+}
