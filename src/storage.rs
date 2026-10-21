@@ -15,8 +15,33 @@ pub fn load_articles(path: &Path) -> Vec<Value> {
         .and_then(|v| v.as_array().cloned())
         .unwrap_or_default()
 }
+/// Like `load_articles`, but a missing file is the only thing that reads as empty:
+/// a corrupt file is an `InvalidData` error, so a save can set it aside instead of overwriting it.
+pub fn try_load_articles(path: &Path) -> io::Result<Vec<Value>> {
+    let bytes = match fs::read(path) {
+        Ok(b) => b,
+        Err(e) if e.kind() == io::ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(e) => return Err(e),
+    };
+    match serde_json::from_slice::<Value>(&bytes) {
+        Ok(Value::Array(a)) => Ok(a),
+        _ => Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            format!("{} is not a JSON list of articles", path.display()),
+        )),
+    }
+}
 pub fn write_json(path: &Path, value: &Value) -> io::Result<()> {
-    fs::write(path, serde_json::to_vec_pretty(value)?)
+    // Write beside the target and rename, so an interrupted write never truncates existing results.
+    let mut temp = path.as_os_str().to_owned();
+    temp.push(".tmp");
+    let temp = std::path::PathBuf::from(temp);
+    let result =
+        fs::write(&temp, serde_json::to_vec_pretty(value)?).and_then(|()| fs::rename(&temp, path));
+    if result.is_err() {
+        let _ = fs::remove_file(&temp);
+    }
+    result
 }
 pub fn write_articles(path: &Path, articles: &[Value]) -> io::Result<()> {
     write_json(path, &Value::Array(articles.to_vec()))
@@ -83,7 +108,25 @@ pub fn save_articles_progressively(
     }
     let _lock = FILE_LOCK.lock().unwrap();
     let path = dir.join(filename);
-    let mut existing = load_articles(&path);
+    let mut existing = match try_load_articles(&path) {
+        Err(e) if e.kind() == io::ErrorKind::InvalidData => {
+            // Keep the unreadable file next to the new results instead of overwriting it.
+            let mut aside = path.clone();
+            for n in 0.. {
+                aside.set_file_name(format!(
+                    "{filename}.corrupt{}",
+                    if n == 0 { String::new() } else { n.to_string() }
+                ));
+                if !aside.exists() {
+                    break;
+                }
+            }
+            fs::rename(&path, &aside)?;
+            println!("{e}; moved to {}", aside.display());
+            Vec::new()
+        }
+        other => other?,
+    };
     let mut ids = existing
         .iter()
         .filter_map(|a| a.get("id"))

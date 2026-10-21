@@ -225,3 +225,27 @@ fn numeric_ids_follow_python_set_equality() {
         5
     );
 }
+#[test]
+fn test_saving_sets_a_corrupt_results_file_aside_instead_of_overwriting_it() {
+    let d = tempfile::tempdir().unwrap();
+    let p = d.path().join("out.json");
+    fs::write(&p, "[{\"id\":1},{\"id\":").unwrap();
+    save_articles_progressively(&[article(2)], d.path(), "out.json").unwrap();
+    assert_eq!(ids(&load_articles(&p)), [2]);
+    assert_eq!(
+        fs::read_to_string(d.path().join("out.json.corrupt")).unwrap(),
+        "[{\"id\":1},{\"id\":"
+    );
+}
+#[test]
+fn test_a_write_failure_keeps_the_previous_results_and_leaves_no_temp_file() {
+    let d = tempfile::tempdir().unwrap();
+    let p = d.path().join("out.json");
+    save_articles_progressively(&[article(1)], d.path(), "out.json").unwrap();
+    // A directory in the way of the rename makes the final step fail after the temp file is written.
+    let blocked = d.path().join("blocked.json");
+    fs::create_dir(&blocked).unwrap();
+    assert!(write_articles(&blocked, &[article(9)]).is_err());
+    assert_eq!(ids(&load_articles(&p)), [1]);
+    assert!(!d.path().join("blocked.json.tmp").exists());
+}
