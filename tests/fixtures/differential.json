@@ -1193,7 +1193,18 @@
       ],
       "renewals": 0,
       "requests": 3
-    }
+    },
+    "intentional_rust": {
+      "status": null,
+      "sleeps": [
+        0.125,
+        6.0,
+        0.125
+      ],
+      "renewals": 0,
+      "requests": 2
+    },
+    "reason": "A 404 means the article does not exist, so it is not retried."
   },
   {
     "name": "zero retries",

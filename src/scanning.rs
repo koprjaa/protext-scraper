@@ -60,6 +60,18 @@ impl ScanOptions {
         Ok(())
     }
 }
+fn report_failed(network: &Network) {
+    let mut failed = network.failed.lock().unwrap();
+    if !failed.is_empty() {
+        failed.sort_unstable();
+        println!(
+            "WARNING: {} IDs could not be fetched after retries (rate limit or network), so the results are incomplete. First: {:?}",
+            failed.len(),
+            &failed[..failed.len().min(20)]
+        );
+        failed.clear();
+    }
+}
 fn short(text: &str, length: usize) -> String {
     text.chars().take(length).collect()
 }
@@ -231,6 +243,7 @@ pub fn scan_id_range_parallel_batch(
         println!("Final save: {} articles", all.len());
         save(options, &all)?;
     }
+    report_failed(network);
     println!(
         "\nBatch parallel scan complete: Found {} articles in range {min}-{max}",
         all.len()
@@ -251,6 +264,7 @@ pub fn scan_id_range_parallel(network: &Network, options: &ScanOptions) -> io::R
         &Mutex::new(HashSet::new()),
         true,
     )?;
+    report_failed(network);
     println!(
         "\nParallel scan complete: Found {} articles in range {}-{}",
         found.len(),
@@ -289,6 +303,7 @@ pub fn scan_id_range(network: &Network, options: &ScanOptions) -> io::Result<Vec
     if !found.is_empty() {
         save(options, &found)?;
     }
+    report_failed(network);
     println!(
         "\nScan complete: Found {} articles in range {}-{}",
         found.len(),

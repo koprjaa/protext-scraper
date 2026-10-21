@@ -87,6 +87,7 @@ pub fn network() -> (Network, Arc<Mock>) {
     (
         Network {
             transport: m.clone(),
+            ..Network::default()
         },
         m,
     )

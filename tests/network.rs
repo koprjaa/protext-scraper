@@ -44,7 +44,7 @@ fn service_unavailable_renews_on_second_attempt() {
 #[test]
 fn errors_exponential_backoff_and_attempt_limits() {
     let (n, m) = support::network();
-    *m.statuses.lock().unwrap() = [Err("timeout".into()), Ok(404), Err("closed".into())].into();
+    *m.statuses.lock().unwrap() = [Err("timeout".into()), Ok(500), Err("closed".into())].into();
     assert!(n.request("http://fixture.test", 3, 1.0, true).is_none());
     assert_eq!(*m.sleeps.lock().unwrap(), [0.125, 6.0, 0.125, 7.0, 0.125]);
     assert_eq!(m.renewals.load(Ordering::SeqCst), 0);
@@ -229,4 +229,15 @@ fn actual_transport_timeout_and_connection_failure() {
     assert!(HttpTransport
         .get(&format!("http://{address}"), &browser_headers(), 0.1, false)
         .is_err());
+}
+#[test]
+fn missing_article_is_not_retried_and_failed_fetch_is_recorded() {
+    let (n, m) = support::network();
+    *m.statuses.lock().unwrap() = [Ok(404)].into();
+    assert!(n.fetch_article_by_id(5).is_none());
+    assert_eq!(m.requests.lock().unwrap().len(), 1);
+    assert!(n.failed.lock().unwrap().is_empty());
+    *m.statuses.lock().unwrap() = [Ok(500), Ok(500), Ok(500)].into();
+    assert!(n.fetch_article_by_id(6).is_none());
+    assert_eq!(*n.failed.lock().unwrap(), [6]);
 }

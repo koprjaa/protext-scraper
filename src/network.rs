@@ -11,7 +11,7 @@ use serde_json::Value;
 use std::{
     io::{Read, Write},
     net::{SocketAddr, TcpStream},
-    sync::Arc,
+    sync::{Arc, Mutex},
     thread,
     time::Duration,
 };
@@ -96,11 +96,14 @@ pub fn browser_headers() -> HeaderMap {
 #[derive(Clone)]
 pub struct Network {
     pub transport: Arc<dyn Transport>,
+    /// IDs whose fetch failed after all retries, as opposed to IDs that do not exist.
+    pub failed: Arc<Mutex<Vec<i64>>>,
 }
 impl Default for Network {
     fn default() -> Self {
         Self {
             transport: Arc::new(HttpTransport),
+            failed: Arc::default(),
         }
     }
 }
@@ -112,6 +115,16 @@ impl Network {
         base_delay: f64,
         tor: bool,
     ) -> Option<Response> {
+        self.attempt(url, retries, base_delay, tor).ok()
+    }
+    /// `Err(true)` means the page does not exist, `Err(false)` that every attempt failed.
+    fn attempt(
+        &self,
+        url: &str,
+        retries: usize,
+        base_delay: f64,
+        tor: bool,
+    ) -> Result<Response, bool> {
         for attempt in 0..retries {
             self.transport.sleep(self.transport.random(0.05, 0.2));
             let result = self.transport.get(
@@ -156,8 +169,9 @@ impl Network {
                         self.transport.sleep(self.transport.random(10.0, 20.0));
                         continue;
                     }
+                    404 | 410 => return Err(true),
                     400..=599 => format!("{} HTTP error for url: {url}", r.status),
-                    _ => return Some(r),
+                    _ => return Ok(r),
                 },
                 Err(e) => e,
             };
@@ -180,15 +194,19 @@ impl Network {
                 println!("Final attempt failed: {error}...");
             }
         }
-        None
+        Err(false)
     }
     pub fn fetch_article_by_id(&self, id: i64) -> Option<Value> {
-        let r = self.request(
-            &format!("https://www.protext.cz/zpravy/show/{id}"),
-            3,
-            1.0,
-            true,
-        )?;
+        let url = format!("https://www.protext.cz/zpravy/show/{id}");
+        let r = match self.attempt(&url, 3, 1.0, true) {
+            Ok(r) => r,
+            Err(missing) => {
+                if !missing {
+                    self.failed.lock().unwrap().push(id);
+                }
+                return None;
+            }
+        };
         parse_article(&decode(&r.body), id)
     }
     pub fn fetch_full_content(&self, url: &str) -> Option<String> {
